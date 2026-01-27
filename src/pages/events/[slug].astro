@@ -2,39 +2,33 @@
 import Layout from '../../layouts/event.astro';
 import Block from '../../components/wp-blocks/generic-block.astro';
 import ATC from '../../components/AddToCalendar/AddToCalendar.astro';
-
-import {
-  BLOCKS_API,
-  REST_API,
-  getSecret
-} from 'astro:env/server'
+import { Debug } from 'astro:components';
 
 // define vars are available in the template
-const { slug, APIURL } = Astro.params;
-const { event, acf, url, title, display_date, display_time, sd, ed } = Astro.props;
+const { slug } = Astro.params;
+const { id, sd, event, acf, title, display_date, display_time } = Astro.props;
 
-const REST_API = getSecret("REST_API");
-const BLOCKS_API = getSecret("BLOCKS_API");
+// // get the content
+const REST_BASE = import.meta.env.REST_BASE;
+let response = await fetch(`${REST_BASE}events/?slug=${slug}`);
+let [post] = await response.json();
 
-// get the content
-const contentPath = `${REST_API}events/?slug=${slug}`; 
-let contentRes = await fetch(contentPath);
-let [post] = await contentRes.json();
+const BLOCKS_API = import.meta.env.BLOCKS_API;
+let fetch_blocks = await fetch(`${BLOCKS_API}posts/${post.id}/blocks`);
+let {blocks} = await fetch_blocks.json(); 
 
-// get the structured data out of the block editor
-const blocksPath = `${BLOCKS_API}posts/${post.id}/blocks`;
-let blocksRes = await fetch(blocksPath);
-let blocks = await blocksRes.json(); 
-
-
-// Automatically build pages for the collectives
+// Build all Event pages
 // The getStaticPaths() is required for static Astro sites.
+// It does not have access to other scopes, use import.meta.env to avoid needless duplication.
+// As a result, it makes sense to do most of the mapping here rather than in the frontmatter.
 export async function getStaticPaths() {
-  // I can't figure out how to access the scope to use variables here..... 
-  let data = await fetch(`http://localhost:10008/wp-json/wp/v2/events`);
-  let events = await data.json();
+  
+  const REST_BASE = import.meta.env.REST_BASE;
+  let fetch_events = await fetch(`${REST_BASE}events`);
+  let events = await fetch_events.json();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
 
   let parseDate = (aDate) => {
       let d = new Date(aDate);
@@ -74,8 +68,8 @@ export async function getStaticPaths() {
         acf: post.acf,
         event: {
           title: post.title.rendered,
-          start: `${sd.year}${sd.month}${sd.date}T${sd.hours}${sd.minutes}00`,
-          end: `${ed.year}${ed.month}${ed.date}T${ed.hours}${ed.minutes}00`,
+          start: post.acf.start.split(" ").join("T"),
+          end: post.acf.end.split(" ").join("T"),
           location: post.acf.location,
           url: Astro.url,
           description: post.excerpt.rendered
@@ -90,25 +84,29 @@ export async function getStaticPaths() {
   <article>
     <header>
       <time>
+        <h2>:: { event.start }</h2>
         <div>{ display_date }</div>
         <div>{ display_time }</div>
       </time>
-        { acf.location && (
-          <div class="location">
-            { acf.location }
-          </div>
-        )}
-        { acf.organizer_email && (
-          <div class="contact">
-              <a href={'mailto:'+acf.organizer_email} data-obfuscation="1">Contact Organizer</a>
-          </div>
-        )}
-        
-        <ATC event={event}></ATC>
+
+      { acf.location && (
+        <div class="location">
+          { acf.location }
+        </div>
+      )}
+      
+      { acf.organizer_email && (
+        <div class="contact">
+            <a href={'mailto:'+acf.organizer_email} data-obfuscation="1">Contact Organizer</a>
+        </div>
+      )}
+
+      <ATC event={event}></ATC>
+
     </header>
-    { blocks.blocks.map( (block) => (
-        <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks || null} />
-      ))}
+    { blocks.map( (block) => (
+      <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks || null} />
+    ))}
   </article>
 
 </Layout>

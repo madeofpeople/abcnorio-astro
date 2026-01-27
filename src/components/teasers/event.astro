@@ -1,6 +1,7 @@
 ---
-const {event} = Astro.props;
-const startDate = new Date( event.acf.start );
+import { Debug } from "astro:components";
+const {data} = Astro.props;
+const startDate = new Date( data.acf.start );
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 
@@ -12,15 +13,17 @@ const start = {
     hr: startDate.getHours() < 13 ? startDate.getHours() : startDate.getHours() - 12,
     min: startDate.getMinutes() < 10 ? `0${startDate.getMinutes().toString()}` : startDate.getMinutes()
 }
+
 ---
-<article class="events">
-    <a href={`/events/${event.slug}`}>
+<article class="teaser events">
+    <a href={`/events/${data.slug}`}>
+        <div>{ data.acf.start.split(' ').join('T') }</div>
         <time>
         { start.wk }, { months[start.m] }, { start.d }, { start.y }
         @ { start.hr }:{ start.min }
         </time>
-        <h2>{ event.title.rendered }</h2>
-        <div set:html={ event.excerpt && event.excerpt.rendered || 'excerpt' }></div>
+        <h2>{ data.title.rendered }</h2>
+        <div set:html={ data.excerpt && data.excerpt.rendered || 'excerpt' }></div>
     </a>
 </article>
 <style>

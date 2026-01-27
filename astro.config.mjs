@@ -6,7 +6,11 @@ import icon from 'astro-icon';
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [ react(), partytown(), icon(), ]
+  image: {
+    remotePatterns: [{ protocol: "https" }],
+  },
+  integrations: [react(), partytown(), icon()],
+  vite: {
+      include: ['picocolors'],
+  },
 });
-
-

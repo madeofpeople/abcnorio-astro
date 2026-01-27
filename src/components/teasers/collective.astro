@@ -1,12 +1,12 @@
 ---
 import { Debug } from 'astro:components';
 
-const { collective } = Astro.props;
+const { data } = Astro.props;
 ---
-<article class="collective">
-    <a href={`/collectives/${collective.slug}`}>
-        <h2>{ collective.title.rendered }</h2>
-        <div set:html={ collective.excerpt.rendered }></div>
+<article class={ data.slug }>
+    <a href={`/collectives/${data.slug}`}>
+        <h2>{ data.title.rendered }</h2>
+        <div set:html={ data.excerpt.rendered }></div>
     </a>
 </article>
 <style>

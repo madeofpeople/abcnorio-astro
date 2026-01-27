@@ -31,11 +31,11 @@ body {
 }
 
 @each $level in $heading-levels {
-$size: $level * $type-size-ratio * $type-base;
-h#{$level} {
-    font-size: $size;
-    line-height: calc(2px + 2ex + 2px);
-    margin-bottom: 0.65em;
-}
+    $size: $level * $type-size-ratio * $type-base;
+    h#{$level} {
+        font-size: $size;
+        line-height: calc(2px + 2ex + 2px);
+        margin-bottom: 0.65em;
+    }
 }
 

@@ -1,29 +1,26 @@
 ---
 import Layout from '/src/layouts/index.astro';
-import Collectives from '/src/components/listings/collectives.astro';
-import Events from '/src/components/listings/events.astro';
-import { Debug } from 'astro:components';
+import Listing from '/src/components/Listing.astro';
 
-const REST_API = import.meta.env.REST_API;
+const REST_BASE = import.meta.env.REST_BASE;
+const SITE_TITLE = import.meta.env.SITE_TITLE;
+
 // posts
-const posts_res = await fetch(`${REST_API}posts`);
-const posts = await posts_res.json();
-// collectives
-const collectives_res = await fetch(`${REST_API}collectives`);
-const collectives = await collectives_res.json();
-// // events
-const events_res = await fetch(`${REST_API}events`);
-const events = await events_res.json();
+//
+// const posts_res = await fetch(`${REST_BASE}posts`);
+// const posts = await posts_res.json();
+// const featured_events_res = await fetch(`${REST_BASE}posts`);
+// const featured_event = await featured_events_res.json();
 ---
-
-<Layout title={posts[0].title.rendered}>
-  
+<Layout title={SITE_TITLE}>
   <section>
     <h2><a href="/collectives">Collectives/</a></h2>
-    <Collectives collectives={collectives} />
+    <Listing slug={'collectives'} />    
   </section>
+ 
   <section>
     <h2><a href="/events">Events/</a></h2>
-    <Events events={events} />    
+    <Listing slug={'events'} />    
   </section>
 </Layout>
+
