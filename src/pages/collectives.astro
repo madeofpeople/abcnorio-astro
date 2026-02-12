@@ -1,0 +1,14 @@
+---
+import Layout from "../layouts/index.astro";
+import Listing from "/src/components/Listing.astro";
+import ASCIIHeader from "/src/components/ASCIIHeader.astro";
+---
+<Layout title="Collectives">
+  <ASCIIHeader text={"Collectives"} />
+  <Listing endpoint="collectives" />
+</Layout>
+<style>
+  h2 {
+    font-size: 6px;
+  }
+</style>

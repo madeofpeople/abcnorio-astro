@@ -1,0 +1,47 @@
+{
+  "name": "abcnr",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "MODE=production BUILD_MODE=production astro build",
+    "build-dev": "MODE=development BUILD_MODE=development astro build --devOutput",
+    "build-staging": "MODE=production BUILD_MODE=staging astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astro-community/astro-embed-youtube": "^0.5.7",
+    "@astrojs/partytown": "^2.1.4",
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/starlight": "^0.37.0",
+    "@astrolib/seo": "^1.0.0-beta.8",
+    "@iconify-json/mdi": "^1.2.3",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.3",
+    "ascii-image": "^3.0.1",
+    "astro": "^5.15.3",
+    "astro-icon": "^1.1.5",
+    "astro-mail-obfuscation": "^2.3.4",
+    "canvas": "^3.2.0",
+    "figlet": "^1.9.4",
+    "file-saver": "^2.0.5",
+    "ics": "^3.8.1",
+    "image-to-ascii-art": "^0.0.4",
+    "luxon": "^3.7.2",
+    "moment": "^2.30.1",
+    "react": "^19.2.0",
+    "react-add-to-calendar": "^0.1.5",
+    "react-add-to-calendar-hoc": "^1.0.10",
+    "react-dom": "^19.2.0",
+    "readline-sync": "^1.4.10",
+    "scss-reset": "^1.4.6",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "sass": "^1.93.3",
+    "stylelint": "^16.25.0",
+    "stylelint-config-recommended-scss": "^16.0.2",
+    "stylelint-config-standard": "^39.0.1"
+  }
+}

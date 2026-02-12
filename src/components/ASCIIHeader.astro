@@ -1,0 +1,16 @@
+---
+import figlet from 'figlet';
+const renderText = async (text) => {
+  const ascii = await figlet.text(text, {
+    font: "BlurVision ASCII"
+  });
+  return ascii;
+}
+const {text} = Astro.props;
+---
+<h2><span class="sr-only">{ text }</span><pre>{ renderText(text) }</pre></h2>
+<style>
+  h2 {
+    font-size: 7px;
+  }
+</style>

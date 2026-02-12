@@ -1,0 +1,38 @@
+---
+import CollectiveTeaser from "/src/components/teasers/collective.astro";
+import EventTeaser from "/src/components/teasers/event.astro";
+import { Debug } from "astro:components";
+import { REST_PATH } from "/src/util/api_paths.js";
+
+const { title, slug } = Astro.props;
+const fetch_url = `${REST_PATH}${slug}`;
+const fetch_results = await fetch(`${fetch_url}`);
+const results = await fetch_results.json();
+let Tag = Debug;
+
+switch (slug) {
+  case "events":
+    Tag = EventTeaser;
+  break;
+  case "collectives":
+    Tag = CollectiveTeaser;
+  break;
+}
+---
+<style>
+  .listing {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr 1fr;
+    @media (min-width: 900px ) {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+</style>
+<section class=listing {slug}>
+    {(results && results.map) &&
+        results.map((result:any) => (
+          <Tag data={result} />
+        ))
+    }
+</section>
