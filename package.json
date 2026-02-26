@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "staging_dev": "BUILD_MODE=staging astro dev",
     "build": "MODE=production BUILD_MODE=production astro build",
     "build-dev": "MODE=development BUILD_MODE=development astro build --devOutput",
     "build-staging": "MODE=production BUILD_MODE=staging astro build",
