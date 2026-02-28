@@ -35,4 +35,3 @@ All commands are run from the root of the project, from a terminal:
 ## 👀 Want to learn more?
 https://docs.astro.build/en/guides/cms/wordpress/
 
-
