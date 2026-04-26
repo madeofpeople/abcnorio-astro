@@ -1,0 +1,21 @@
+@charset "UTF-8";
+@use './tokens/colors';
+@use './tokens/typography';
+
+/* Admin parity subset from frontend tokens/typography without full frontend reset/layout rules. */
+body.wp-admin {
+  background-color: var(--color-page-bg);
+  color: var(--color-text);
+}
+
+body.wp-admin :where(.wrap, .editor-styles-wrapper, .acf-fields) {
+  color: var(--color-text);
+}
+
+body.wp-admin :where(a, a:visited) {
+  color: var(--color-nav-link);
+}
+
+body.wp-admin :where(h1, h2, h3, h4) {
+  color: var(--color-text);
+}

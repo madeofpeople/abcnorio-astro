@@ -1,0 +1,53 @@
+---
+import Menu from '@components/Menu/Menu.astro';
+import { fetchMenu } from '@util/navigation.js';
+
+/** @type {Array<{ title: string, url: string, target?: string }>} */
+const primaryMenu = await fetchMenu('primary_navigation');
+---
+<header>
+    <a href="/" class="logo">
+        <img src="/abcnorio-logo.svg" width="128" height="128" alt="ABC No Rio Logo" />
+    </a>
+    {primaryMenu.length > 0 && (
+        <Menu menuData={primaryMenu} />
+    )}
+<!-- 
+    <span class="sr-only">ABCNORIO</span>
+<a class="logo" href="/"><pre>
+ ░▒▓██████▓▒░░▒▓███████▓▒░ ░▒▓██████▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░
+░▒▓████████▓▒░▒▓███████▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░ ░▒▓██████▓▒░
+
+░▒▓███████▓▒░ ░▒▓██████▓▒░░▒▓███████▓▒░░▒▓█▓▒░░▒▓██████▓▒░  
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
+░▒▓█▓▒░░▒▓█▓▒░░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓██████▓▒░
+</pre></a> -->
+
+
+</header>
+<style>
+    header {
+        pre {
+            font-size: 5px;
+            @media (min-width: 900px) {
+                font-size: 12px;
+            }
+        }
+        a.logo {
+            display: inline-block;
+            text-decoration: none;
+            &:hover {
+                color: #090;
+            }
+        }
+    }
+</style>

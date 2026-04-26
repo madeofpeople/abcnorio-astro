@@ -1,0 +1,53 @@
+---
+interface Props {
+    q?: string;
+}
+const { q = '' } = Astro.props;
+---
+<div class="search">
+    {Astro.url?.pathname === '/search' ? (
+        <form id="search-form" action="/search"
+              aria-controls="search-results"
+              hx-get="/search/results" hx-target="#search-results" hx-swap="outerHTML"
+              hx-trigger="load, submit">
+            <input type="text" name="q" placeholder="Search..." required value={q}>
+            <button type="submit">Search</button>
+        </form>
+        <announce id="search-announce" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></announce>
+    ) : (
+        <form id="search-form" action="/search">
+            <input type="text" name="q" placeholder="Search..." required value={q}>
+            <button type="submit">Search</button>
+        </form>
+    )}
+</div>
+<script>
+    import htmx from 'htmx.org';
+    window.htmx = htmx;
+
+    const announceEl = document.querySelector('#search-announce');
+
+    const handleBeforeRequest = (event: any) => {
+        if (event?.detail?.target?.id !== 'search-results') return;
+        event.detail.target.setAttribute('aria-busy', 'true');
+        if (announceEl) {
+            announceEl.textContent = 'Loading search results.';
+            announceEl.classList.add('announcement_visible');
+            announceEl.classList.remove('sr-only');
+        }
+    };
+
+    const handleAfterSwap = (event: any) => {
+        if (event?.detail?.target?.id !== 'search-results') return;
+        const resultsEl = event.detail.target;
+        const count = resultsEl.querySelectorAll('article').length;
+        resultsEl.setAttribute('aria-busy', 'false');
+        if (announceEl) {
+            announceEl.textContent = `Loaded ${count} result${count === 1 ? '' : 's'}.`;
+            announceEl.classList.remove('announcement_visible');
+        }
+    };
+
+    document.body.addEventListener('htmx:beforeRequest', handleBeforeRequest);
+    document.body.addEventListener('htmx:afterSwap', handleAfterSwap);
+</script>

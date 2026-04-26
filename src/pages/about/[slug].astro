@@ -1,0 +1,39 @@
+---
+import Layout from '@layouts/index.astro';
+import Block from '@components/wp-blocks/generic-block.astro';
+import { SITE_URL, REST_PATH } from '@util/paths.js';
+import { fetchPostBlocksCachedByPostModified } from '@util/blocks.js';
+import { buildPostSeo } from '@util/seo.js';
+import { fetchAllWpItemsWithBuildCache, fetchJsonWithBuildCache } from '@util/build-cache.js';
+
+// define vars are available in the template
+const { slug } = Astro.params;
+const { post } = Astro.props as any;
+const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const seo = buildPostSeo({
+  post,
+  siteUrl: SITE_URL,
+  pathname: `/about/${slug}/`
+});
+
+export async function getStaticPaths() {
+  const parentPages = await fetchJsonWithBuildCache(`${REST_PATH}pages?slug=about`, { defaultValue: [] });
+  const aboutId = parentPages?.[0]?.id;
+
+  if (!aboutId) {
+    return [];
+  }
+
+  const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}pages?parent=${aboutId}`, { defaultValue: [] });
+  return posts.map((post:any) => ({
+    params: { slug: post.slug },
+    props: { post: post },
+  }));
+}
+
+
+---
+
+<Layout>
+  <h1 set:html={post.title.rendered}></h1>
+</Layout>

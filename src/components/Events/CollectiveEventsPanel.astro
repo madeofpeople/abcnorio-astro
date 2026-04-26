@@ -1,0 +1,150 @@
+---
+import { getEvents } from "@lib/events/events.js";
+import EventListing from "@components/Events/EventListing.astro";
+import Pagination from "@components/Pagination/Pagination.astro";
+import { REST_PATH } from "@util/paths.js";
+import { getOrSetRuntimeCache } from "@util/runtime-cache.js";
+import { POSTS_PER_PAGE } from "@consts";
+import "./_filters.scss";
+import SegmentedControl from "@components/SegmentedControl.astro";
+
+interface Props {
+    collectiveTermId: number;
+    pagePath: string;
+}
+
+const { collectiveTermId, pagePath } = Astro.props;
+const page = parseInt(Astro.url.searchParams.get("page") ?? "1", 10);
+const hrefParams = new URLSearchParams(Astro.url.searchParams);
+hrefParams.set("collective_association", String(collectiveTermId));
+hrefParams.delete("page");
+const hrefBase = `${pagePath}${hrefParams.toString() ? `?${hrefParams.toString()}` : ""}`;
+
+const now = new Date().toISOString();
+const filters: Record<string, string | number> = {
+    orderby: "event_start_date",
+    order: "desc",
+    collective_association: collectiveTermId,
+    event_start_after: now,
+};
+
+const TAXONOMY_TTL_MS = 5 * 60 * 1000;
+const [{ events, totalPages }, tagsRes] = await Promise.all([
+    getEvents(filters, { page, perPage: POSTS_PER_PAGE }),
+    getOrSetRuntimeCache('event-tags:list', TAXONOMY_TTL_MS, async () => {
+        const response = await fetch(`${REST_PATH}event-tags?per_page=100`);
+        return response.ok ? await response.json() : [];
+    }),
+]);
+const tags = tagsRes;
+---
+
+<events-panel>
+    <div class="filter-container">
+        <div
+            id="announce"
+            class="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+        >
+        </div>
+        <form
+            id="collective-event-filters-form"
+            action={pagePath}
+            aria-controls="events__listing"
+            hx-get="/events/listing"
+            hx-target=".events__listing"
+            hx-trigger="submit"
+            hx-swap="outerHTML swap:0.333s settle:0.333s"
+        >
+            <input
+                type="hidden"
+                name="collective_association"
+                value={collectiveTermId}
+            />
+            <section class="filters">
+                <h2 class="ui-label">Filter events:</h2>
+                <div class="filter-group">
+                    <SegmentedControl
+                        name="date-filter"
+                        label="Date filter"
+                        options={[
+                            { value: '', label: 'All' },
+                            { value: 'upcoming', label: 'Upcoming', checked: true },
+                            { value: 'past', label: 'Past' },
+                        ]}
+                    />
+                </div>
+                {
+                    tags.length > 0 && (
+                        <div class="filter-group">
+                            <label for="event_tag">Tag:</label>
+                            <select id="event_tag" name="event_tag">
+                                <option value="">All</option>
+                                {tags.map((tag: any) => (
+                                    <option value={tag.id}>{tag.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )
+                }
+                <div class="filter-group">
+                    <SegmentedControl
+                        name="order"
+                        label="Order"
+                        options={[
+                            { value: 'asc', label: 'Oldest first' },
+                            { value: 'desc', label: 'Newest first', checked: true },
+                        ]}
+                    />
+                </div>
+                <button type="submit">Apply Filters</button>
+            </section>
+        </form>
+    </div>
+    <div class="events_listing">
+        <EventListing events={events} />
+    </div>
+    <Pagination
+        id="pagination"
+        currentPage={page}
+        totalPages={totalPages}
+        hxGet="/events/listing"
+        hrefBase={hrefBase}
+        hxTarget="#events__listing"
+        hxInclude="#collective-event-filters-form"
+    />
+</events-panel>
+<script>
+    import htmx from "htmx.org";
+    window.htmx = htmx;
+
+    const panelEl = document.querySelector("events-panel");
+    const announceEl = panelEl?.querySelector("#announce");
+
+    const handleBeforeRequest = (event: any) => {
+        if (event?.detail?.target?.id !== "events__listing") return;
+        event.detail.target.classList.add("is-transitioning-out");
+        event.detail.target.setAttribute("aria-busy", "true");
+        if (announceEl) {
+            announceEl.textContent = "Loading events.";
+            announceEl.classList.add("announcement_visible");
+        }
+    };
+
+    const handleAfterSwap = (event: any) => {
+        if (event?.detail?.target?.id !== "events__listing") return;
+        const listingEl = event.detail.target;
+        listingEl.classList.remove("is-transitioning-out");
+        const count = listingEl.querySelectorAll("article").length;
+        listingEl.setAttribute("aria-busy", "false");
+        if (announceEl) {
+            announceEl.textContent = `Loaded ${count} event${count === 1 ? "" : "s"}.`;
+            announceEl.classList.remove("announcement_visible");
+        }
+    };
+
+    document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
+    document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+</script>

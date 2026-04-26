@@ -1,0 +1,34 @@
+---
+import Head from '@components/Head.astro';
+import Header from '@components/Header.astro';
+import './_event.scss';
+const {
+  title,
+  description,
+  keywords,
+  canonical,
+  ogImage,
+  twitterSite,
+  twitterCard,
+} = Astro.props;
+
+---
+<html lang="en">
+  <Head
+    title={title}
+    description={description}
+    keywords={keywords}
+    canonical={canonical}
+    ogImage={ogImage}
+    twitterSite={twitterSite}
+    twitterCard={twitterCard}
+  />
+  <body>
+    <Header />
+    <main class="event-layout">
+      <slot name="event_header"/>
+      <slot name="main"/>
+      <slot name="sidebar" />
+    </main>
+  </body>
+</html>

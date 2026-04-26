@@ -1,0 +1,106 @@
+  @use "@tokens/breakpoints";
+
+$teaser-out-duration: 0.333s;
+$teaser-in-duration: 0.333s;
+$stagger-count: 24;
+$stagger-step: 45ms;
+
+.listing {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  gap: 1rem;
+
+
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+
+  @media (min-width: breakpoints.get-breakpoint(sm)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: breakpoints.get-breakpoint(md)) {
+    gap: 2rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @media (min-width: breakpoints.get-breakpoint(lg)) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  p {
+    hyphens: auto;
+    white-space: wrap;
+  }
+
+  .teaser {
+    position: relative;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    transition-property: transform;
+    transition-duration: $teaser-out-duration;
+    transition-timing-function: ease-in-out;
+    transition-delay: 0ms;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100%;
+      background: var(--color-page-bg);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      pointer-events: none;
+      transition-property: transform;
+      transition-duration: $teaser-out-duration;
+      transition-timing-function: ease-in-out;
+      transition-delay: 0ms;
+    }
+  }
+}
+
+.events__listing .teaser {
+  transition-property: transform;
+}
+
+.events__listing.htmx-swapping .teaser,
+.events__listing .teaser.htmx-added {
+  @for $i from 1 through $stagger-count {
+    &:nth-child(#{$i}) {
+      transition-delay: ($i - 1) * $stagger-step;
+
+      &::after {
+        transition-delay: ($i - 1) * $stagger-step;
+      }
+    }
+  }
+}
+
+.events__listing.htmx-swapping {
+  .teaser {
+    transform: translate3d(0 , -100vw, 0);
+
+    &::after {
+      transform: scaleY(1);
+    }
+  }
+}
+
+.events__listing .teaser.htmx-added {
+  transition-duration: $teaser-in-duration;
+  transform: translate3d(0, -100vw, 0);
+
+  &::after {
+    transition-duration: $teaser-in-duration;
+    transform: scaleY(1);
+  }
+}
+
+.events__listing.htmx-settling .teaser.htmx-added {
+  transform: translate3d(0, 0, 0);
+
+  &::after {
+    transform: scaleY(0);
+  }
+}

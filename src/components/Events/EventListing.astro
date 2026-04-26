@@ -1,0 +1,22 @@
+---
+import EventTeaser from "@components/Events/event_teaser.astro";
+import "./_event-listing.scss";
+
+interface Props {
+  events: any[];
+}
+
+const { events }: Props = Astro.props;
+---
+
+<section
+  id="events__listing"
+  class="events__listing listing"
+  role="region"
+  aria-label="Event results"
+  aria-busy="false"
+>
+    {events.map((result) => (
+        <EventTeaser data={result} />
+    ))}
+</section>

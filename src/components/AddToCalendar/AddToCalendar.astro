@@ -1,0 +1,65 @@
+---
+const { event } = Astro.props;
+
+const toDataValue = (value: unknown) => {
+    if (value instanceof Date) {
+        return value.toISOString();
+    }
+
+    if (value === undefined || value === null) {
+        return '';
+    }
+
+    return String(value);
+};
+---
+<add-to-calendar-button
+    data-title={toDataValue(event?.title)}
+    data-description={toDataValue(event?.description)}
+    data-start={toDataValue(event?.start ?? event?.event_start_date)}
+    data-end={toDataValue(event?.end ?? event?.event_end_date)}
+    data-location={toDataValue(event?.location ?? event?.event_venue_name)}
+    data-time-zone={toDataValue(event?.timeZone ?? event?.event_timezone)}
+>
+    <button class="act-google">Download Google ICS</button>
+    <button class="act-apple">Download Apple ICS</button>
+    <button class="act-outlook">Download Outlook ICS</button>
+</add-to-calendar-button>
+
+<script>
+    import { downloadICS, generateGoogleLink, generateOutlookLink } from './utils/generateLinks.js';
+
+    class AddToCalendar extends HTMLElement {
+        constructor() {
+            super();
+            const googleButton = this.querySelector('button.act-google');
+            const appleButton = this.querySelector('button.act-apple');
+            const outlookButton = this.querySelector('button.act-outlook');
+            const event = Object.assign( {}, this.dataset );
+
+            if (googleButton) {
+                googleButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const calLink = String(generateGoogleLink({ ...event }));
+                    window.open(calLink, '_blank');
+                });
+            }
+
+            if (appleButton) {
+                appleButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    downloadICS({ ...event });
+                });
+            }
+
+            if (outlookButton) {
+                outlookButton.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const calLink = String(generateOutlookLink({ ...event }));
+                    window.open(calLink, '_blank');
+                });
+            }
+        }
+    }
+    customElements.define('add-to-calendar-button', AddToCalendar);
+</script>

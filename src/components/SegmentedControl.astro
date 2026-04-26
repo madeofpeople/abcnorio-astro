@@ -1,0 +1,138 @@
+---
+interface Option {
+    value: string;
+    label: string;
+    checked?: boolean;
+}
+
+interface Props {
+    name: string;
+    options: Option[];
+    label?: string;
+}
+
+const { name, options, label } = Astro.props;
+---
+
+<segmented-control role="radiogroup" aria-label={label}>
+    {options.map((opt) => {
+        const id = `${name}-${opt.value || 'all'}`;
+        return (
+            <>
+                <input type="radio" id={id} name={name} value={opt.value} checked={opt.checked} />
+                <label for={id}>{opt.label}</label>
+            </>
+        );
+    })}
+    <span class="segmented-control__pill" aria-hidden="true"></span>
+</segmented-control>
+
+<style is:global lang="scss">
+    segmented-control {
+        position: relative;
+        display: inline-flex;
+        background-color: #eee;
+        box-shadow: 0 0 3px inset rgba(0, 0, 0, 0.3);
+        border-radius: 2em;
+        margin-top: 1.25rem;
+        input[type='radio'] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            padding: 0;
+            border: none;
+        }
+
+        label {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 0;
+            font-size: 0.875rem;
+            position: relative;
+            z-index: 1;
+            padding: 0.25em 0.875em;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.15s ease;
+            line-height: 1.5;
+            white-space: nowrap;
+        }
+
+        // CSS-only fallback: checked label gets filled background
+        input[type='radio']:checked + label {
+            background: currentColor;
+            color: var(--color-page-bg);
+            border-radius: 2em;
+            white-space: nowrap;
+        }
+
+        // JS-enhanced: pill handles the visual, labels just change color
+        &.js-pill-active {
+            input[type='radio']:checked + label {
+                background: transparent;
+                color: var(--color-page-bg);
+            }
+
+            .segmented-control__pill {
+                display: block;
+            }
+        }
+
+        .segmented-control__pill {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            border-radius: 2em;
+            background: currentColor;
+            transition:
+                transform 0.2s ease,
+                width 0.2s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        input[type='radio']:focus-visible + label {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+            border-radius: 2em;
+        }
+    }
+</style>
+
+<script>
+    class SegmentedControlElement extends HTMLElement {
+        connectedCallback() {
+            const pill = this.querySelector(
+                ".segmented-control__pill",
+            ) as HTMLElement | null;
+            if (!pill) return;
+
+            const movePill = () => {
+                const checked = this.querySelector(
+                    "input[type='radio']:checked",
+                ) as HTMLInputElement | null;
+                if (!checked) return;
+                const label = this.querySelector(
+                    `label[for="${checked.id}"]`,
+                ) as HTMLElement | null;
+                if (!label) return;
+                pill.style.width = label.offsetWidth + "px";
+                pill.style.transform = `translateX(${label.offsetLeft}px)`;
+            };
+
+            this.classList.add("js-pill-active");
+            this.querySelectorAll("input[type='radio']").forEach((input) => {
+                input.addEventListener("change", movePill);
+            });
+            movePill();
+        }
+    }
+
+    if (!customElements.get("segmented-control")) {
+        customElements.define("segmented-control", SegmentedControlElement);
+    }
+</script>

@@ -1,0 +1,237 @@
+@use '../../styles/tokens/breakpoints';
+@use './menu-toggle';
+@use '@tokens/colors';
+
+@mixin submenu-reveal($expanded: false) {
+    transition-property: max-height, opacity, transform, visibility;
+    transition-duration: 0.25s, 0.2s, 0.2s, 0s;
+    transition-timing-function: ease-out, ease-out, ease-out, linear;
+
+    @if $expanded {
+        max-height: 40rem;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+        transition-delay: 0s, 0s, 0s, 0s;
+    }
+
+    @else {
+        max-height: 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-0.25rem);
+        pointer-events: none;
+        transition-delay: 0s, 0s, 0s, 0.25s;
+    }
+}
+
+nav-menu {
+    position: relative;
+    container-type: inline-size;
+    container-name: menu-container;
+    width: 100%;
+    box-sizing: border-box;
+
+    @include menu-toggle.styles;
+
+    nav {
+        position: fixed;
+        box-sizing: border-box;
+        top: 0;
+        right: 0;
+        z-index: 1000;
+        width: 100%;
+        height: 100vh;
+        overflow-y: auto;
+        transition-property: right;
+        transition-duration: 0.25s;
+        transition-timing-function: ease-out;
+        padding: 6rem 2rem 2rem 2rem;
+        background-color: rgba( colors.$c_text, 0.95);
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            margin-bottom: 2px;
+
+            li {
+                margin: 0;
+                margin-bottom: 2px;
+                display: flex;
+                flex-direction: column;
+                background-color: var( --color-subnav-link);
+
+                a {
+                    font-size: 2rem;
+                    padding: 0 0 0 4rem;
+                }
+            }
+        }
+
+        > ul > li {
+            position: relative;
+            display: block;
+            flex-direction: column;
+
+            a,
+            a:visited {
+                display: block;
+                text-decoration: none;
+                font-family: var(--font-impact-label-reversed), monospace;
+                color: var(--color-page-bg);
+                background-color: var(--color-nav-link);
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+                padding-left: 3.5rem;
+
+                &:hover,
+                &:focus {
+                    background-color: var(--color-nav-link-hover);
+                    color: var(--color-page-bg);
+                }
+            }
+
+            a:first-of-type {
+                padding-left: 1rem;
+                padding-right: 3rem;
+            }
+
+            /* ## submenus */
+            &:hover,
+            &:focus {
+
+                > a,
+                > a:visited {
+                    background-color: var(--color-nav-link-hover);
+                    color: var(--color-page-bg);
+                }
+
+                button {
+                    background-color: var(--color-nav-link-hover);
+                    border-color: var(--color-nav-link-hover);
+                }
+            }
+
+            > a:first-of-type {
+                width: 100%;
+                padding: 0.25rem 2rem 0.25rem 1rem;
+                margin-bottom: 2px;
+            }
+
+            >.subnav__toggle {
+                position: absolute;
+                right: 0;
+                top: 0.15rem;
+                width: 2rem;
+                height: 1.5rem;
+                background-color: var(--color-nav-link);
+                padding: 0;
+
+                svg {
+                    position: relative;
+                    width: 0.5rem;
+                    top: -0.25rem;
+                    right: 0rem;
+                    transform: rotate3d(1, 0, 0, 0deg);
+                    transition-property: transform;
+                    transition-duration: 0.25s;
+                    transition-timing-function: ease-in-out;
+
+                    path {
+                        fill: var(--color-page-bg);
+                    }
+                }
+            }
+
+            &[aria-expanded="true"]>.subnav__toggle svg {
+                transform: rotate3d(1, 0, 0, 180deg);
+            }
+
+            >ul {
+                @include submenu-reveal(false);
+            }
+
+            >ul[aria-expanded="true"] {
+                @include submenu-reveal(true);
+            }
+        }
+
+        &[aria-expanded="false"] {
+            right: -100%;
+        }
+
+        &[aria-expanded="true"] {
+            right: 0;
+        }
+    }
+
+    @media (min-width: breakpoints.get-breakpoint(sm)) {
+        position: static;
+
+        .toggle {
+            display: none;
+        }
+
+        nav {
+            position: static;
+            left: auto;
+            right: auto;
+            display: block;
+            height: auto;
+            padding: 0;
+            background-color: transparent;
+            overflow: visible;
+
+
+            > ul {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                overflow: visible;
+
+                > li {
+                    display: block;
+                    position: relative;
+                    flex-direction: row;
+
+                    a {
+                        font-size: 1.5rem;
+                    }
+
+                    >ul,
+                    &[aria-expanded="true"]>ul {
+                        @include submenu-reveal(false);
+                        width: max-content;
+                        min-width: 300px;
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        display: block;
+                        z-index: 10;
+                        li {
+                            display: block;
+                            line-height: 1;
+                        }
+                    }
+
+                    &:focus>ul,
+                    &:hover>ul,
+                    &:focus-within>ul {
+                        @include submenu-reveal(true);
+                    }
+                }
+                
+            }
+        }
+        // hide link to home off screen
+        // we link it to the logo
+        // still good for a11y and SEO
+        li.homepage {
+            position: fixed;
+            top: 100vh;
+            left: 100vw;
+        }
+    }
+}

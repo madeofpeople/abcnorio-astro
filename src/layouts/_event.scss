@@ -1,0 +1,45 @@
+@use "@tokens/breakpoints";
+
+.event-layout {
+  display: grid;
+  padding: 2rem;
+  gap: 2rem;
+
+  .event-header {
+    order: 1;
+  }
+
+  .event-main {
+    max-width: 48rem;
+    order: 3;
+  }
+
+  aside {
+    order: 2;
+    button {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  @media (min-width: breakpoints.get-breakpoint(sm)) {
+    grid-template-columns: 3fr 1fr;
+
+    .event-header {
+      grid-column: 1 / 3;
+      order: 1;
+    }
+
+    .event-main {
+      grid-column: 1 / 4;
+      grid-row: 2 / 2;
+      order: 2;
+    }
+
+    aside {
+      order: 3;
+      grid-column: 4 / 4;
+    }
+  }
+}

@@ -1,0 +1,18 @@
+@use "sass:map";
+
+$breakpoints: (
+    sm: 720px,
+    md: 1024px,
+    lg: 1250px,
+    xl: 1540px
+);
+
+:root {
+    @each $bp_name, $val in $breakpoints {
+        --breakpoint-#{$bp_name}: #{$val};
+    }
+}
+
+@function get-breakpoint($name) {
+    @return map.get($breakpoints, $name);
+}

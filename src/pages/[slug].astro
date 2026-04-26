@@ -1,0 +1,30 @@
+---
+import { SITE_URL, REST_PATH } from '@util/paths.js';
+import { buildPostSeo } from '@util/seo.js';
+import { fetchAllWpItemsWithBuildCache } from '@util/build-cache.js';
+import Layout from '@layouts/landing.astro';
+
+const { slug } = Astro.params;
+const { post } = Astro.props as any;
+const seo = buildPostSeo({
+  post,
+  siteUrl: SITE_URL,
+  pathname: `/${slug}/`
+});
+
+export async function getStaticPaths() {
+  const reservedSlugs = ['about', 'collectives', 'events', 'programming'];
+  const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}pages?parent=0`, { defaultValue: [] });
+  return posts
+    .filter((post: any) => post?.slug && !reservedSlugs.includes(post.slug))
+    .map((post: any) => ({
+      params: { slug: post.slug },
+      props: { post },
+    }));
+}
+---
+<Layout>
+  <article>
+    <h1 set:html={post.title?.rendered || ''}></h1>
+  </article>
+</Layout>

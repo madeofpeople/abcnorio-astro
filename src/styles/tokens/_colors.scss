@@ -1,0 +1,23 @@
+$c_text: #222;
+$c_page_bg: #fafafa;
+$c_link: #cd1c12;
+$c_accent-secondary: #009a0a;
+$c_subnav_link: darken(#cd1c12, 10%);
+$c_panel: #f2ecd5;
+
+:root {
+
+    --color-page-bg: #{$c_page_bg};
+    --color-text: #{$c_text};
+    --color-link: #{$c_link};
+    --color-accent: #{$c_link};
+    --color-accent-secondary: #{$c_accent-secondary};
+    --color-panel: #{$c_panel};
+    --color-panel-b: #ececec;
+    --color-menu-submenu-bg: rgba(#000, 0.9);
+    --color-nav-link: #{$c_link};
+    --color-nav-bg: transparent;
+    --color-nav-link-hover: #222;
+    --color-subnav-link: #{$c_subnav_link};
+
+}

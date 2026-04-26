@@ -1,0 +1,55 @@
+---
+import { Debug } from "astro:components";
+import { REST_PATH } from "@util/paths.js";
+import { fetchJsonWithBuildCache } from '@util/build-cache.js';
+
+interface Props {
+  slug: string;
+  teaserComponent?: any;
+  requiredProps?: string[];
+}
+
+const { slug, teaserComponent, requiredProps = [] }: Props = Astro.props;
+const results = await fetchJsonWithBuildCache(`${REST_PATH}${slug}`, { defaultValue: [] });
+
+const hasValue = (value: any) => value !== undefined && value !== null && value !== '';
+const readRequiredProp = (item: any, prop: string) => {
+  if (prop === 'title') {
+    return item?.title?.rendered;
+  }
+
+  if (prop === 'excerpt') {
+    return item?.excerpt?.rendered;
+  }
+
+  return item?.[prop] ?? item?.meta?.[prop] ?? item?.acf?.[prop];
+};
+const items = Array.isArray(results)
+  ? results.filter((result: any) => (
+      !requiredProps.length || requiredProps.every((prop) => hasValue(readRequiredProp(result, prop)))
+    ))
+  : [];
+
+const Tag = teaserComponent ?? Debug;
+
+---
+<style>
+
+  .listing {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: repeat( 2, minmax(0, 1fr));
+    @media (min-width: 900px ) {
+      grid-template-columns: repeat( 3, minmax(0, 1fr));
+    }
+    p { 
+      hyphens: auto;
+      white-space: wrap;
+    }
+  }
+</style>
+<section class="listing">
+    {items.map((result: any) => (
+      <Tag data={result} />
+    ))}
+</section>

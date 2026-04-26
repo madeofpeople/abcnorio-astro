@@ -1,0 +1,32 @@
+---
+import Head from '@components/Head.astro';
+import Header from '@components/Header.astro';
+
+const {
+  title,
+  description,
+  keywords,
+  canonical,
+  ogImage,
+  twitterSite,
+  twitterCard,
+} = Astro.props;
+---
+<html lang="en">
+  <Head
+    title={title}
+    description={description}
+    keywords={keywords}
+    canonical={canonical}
+    ogImage={ogImage}
+    twitterSite={twitterSite}
+    twitterCard={twitterCard}
+  />
+  <body>
+    <Header />
+    <h1>{title}</h1>
+    <article>
+      <slot /> <!-- your content is injected here -->
+    </article>
+  </body>
+</html>

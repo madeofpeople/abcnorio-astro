@@ -1,0 +1,70 @@
+---
+export const prerender = false;
+export const partial = true;
+
+if (!Astro.request.headers.get('HX-Request')) {
+    return Astro.redirect('/events');
+}
+
+// Push the canonical /events URL (not the /events/listing partial URL) into browser history
+// so back navigation lands on the full page with the correct filter state.
+const pushUrl = new URL(Astro.request.url);
+const hxCurrentUrl = Astro.request.headers.get('HX-Current-URL');
+const currentPathname = hxCurrentUrl ? new URL(hxCurrentUrl).pathname : '/events';
+Astro.response.headers.set('HX-Push-Url', `${currentPathname}?${pushUrl.searchParams.toString()}`);
+
+import { getEvents } from '../../lib/events/events.js';
+import EventListing from '@components/Events/EventListing.astro';
+import Pagination from '@components/Pagination/Pagination.astro';
+import { POSTS_PER_PAGE } from '@consts';
+
+const url = new URL(Astro.request.url);
+const dateFilter = url.searchParams.get('date-filter') ?? 'upcoming';
+const page = parseInt(url.searchParams.get('page') ?? '1', 10);
+
+const now = new Date().toISOString();
+const filters: Record<string, string> = {};
+
+const explicitAfter = url.searchParams.get('event_start_after');
+const effectiveDateFilter = (dateFilter === 'upcoming' && explicitAfter && explicitAfter < now)
+    ? 'all'
+    : dateFilter;
+
+if (effectiveDateFilter === 'upcoming') {
+    filters['event_start_after'] = now;
+} else if (effectiveDateFilter === 'past') {
+    filters['event_start_before'] = now;
+}
+
+for (const param of ['event_start_after', 'event_start_before', 'event_type', 'event_tag', 'collective_association']) {
+    const val = url.searchParams.get(param);
+    if (val) filters[param] = val;
+}
+
+const order = url.searchParams.get('order') ?? 'desc';
+filters['orderby'] = 'event_start_date';
+filters['order'] = order;
+const { events, totalPages } = await getEvents(filters, { page, perPage: POSTS_PER_PAGE });
+const filterOverridden = effectiveDateFilter !== dateFilter;
+const hrefParams = new URLSearchParams(url.searchParams);
+hrefParams.delete('page');
+const hrefBase = `${currentPathname}${hrefParams.toString() ? `?${hrefParams.toString()}` : ''}`;
+---
+<EventListing events={events} />
+{filterOverridden && (
+    <select id="date-filter" name="date-filter" hx-swap-oob="true">
+        <option value="" selected={effectiveDateFilter === ''}>All</option>
+        <option value="upcoming" selected={effectiveDateFilter === 'upcoming'}>Upcoming</option>
+        <option value="past" selected={effectiveDateFilter === 'past'}>Past</option>
+    </select>
+)}
+<Pagination
+    id="pagination"
+    currentPage={page}
+    totalPages={totalPages}
+    hxGet="/events/listing"
+    hrefBase={hrefBase}
+    hxTarget="#events__listing"
+    hxInclude="#event-filters-form, #collective-event-filters-form"
+    oob={true}
+/>

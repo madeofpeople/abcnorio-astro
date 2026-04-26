@@ -1,0 +1,4 @@
+---
+const { component, attributes, innerBlocks } = Astro.props;
+---
+<p set:html={attributes.value || attributes.content}></p>

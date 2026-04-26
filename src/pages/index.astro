@@ -1,0 +1,33 @@
+---
+import Layout from '@layouts/index.astro';
+import ASCIIHeader from '@components/ASCIIHeader.astro';
+import Listing from '@components/Listing.astro';
+import EventTeaser from '@components/Events/event_teaser.astro';
+import CollectiveTeaser from '@components/teasers/collective.astro';
+import { SITE_URL, REST_PATH } from '@util/paths.js';
+---
+<Layout
+  title="ABC No Rio"
+  description="ABC No Rio collectives, events, and ongoing programming."
+  canonical={`${SITE_URL}/`}
+>
+
+  <section>
+    <h2><a href="/collectives">Collectives/</a></h2>
+    <Listing
+      slug={'collectives'}
+      requiredProps={["collective_name"]}
+      teaserComponent={CollectiveTeaser}
+    />
+  </section>
+ 
+  <section>
+    <h2><a href="/events">Events/</a></h2>
+    <Listing
+      slug={'events'}
+      requiredProps={["event_start_date"]}
+      teaserComponent={EventTeaser}
+    />
+  </section>
+  
+</Layout>

@@ -1,0 +1,51 @@
+---
+import Layout from '@layouts/collective.astro';
+import Block from '@components/wp-blocks/generic-block.astro';
+import CollectiveEventsPanel from '@components/Events/CollectiveEventsPanel.astro';
+import { SITE_URL, REST_PATH } from '@util/paths.js';
+import { fetchPostBlocksCachedByPostModified } from '@util/blocks.js';
+import { buildPostSeo } from '@util/seo.js';
+import { fetchAllWpItemsWithBuildCache } from '@util/build-cache.js';
+
+// define vars are available in the template
+const { slug } = Astro.params;
+const { post } = Astro.props as any;
+const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const seo = buildPostSeo({
+  post,
+  siteUrl: SITE_URL,
+  pathname: `/collectives/${slug}/`
+});
+const collectiveTermId = post?.['collective-associations']?.[0];
+
+// Build all collective pages
+// The getStaticPaths() is required for static Astro sites.
+// It does not have access to other scopes, use import.meta.env to avoid needless duplication.
+// As a result, it makes sense to do most of the mapping here rather than in the frontmatter.
+export async function getStaticPaths() {
+  const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}collectives`, { defaultValue: [] });
+  return posts.map((post:any) => ({
+    params: { slug: post.slug },
+    props: { post: post },
+  }));
+}
+
+---
+<Layout
+  title={seo.title}
+  description={seo.description}
+  canonical={seo.canonical}
+  ogImage={seo.ogImage}>
+  <main>
+    <h1 set:html={post.title.rendered}></h1>
+    <article>
+      { post.excerpt }
+      { blocks.map((block: any) => (
+          <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks || null} />
+        ))}
+    </article>
+    {collectiveTermId && (
+      <CollectiveEventsPanel collectiveTermId={collectiveTermId} pagePath={`/collectives/${slug}/`} server:defer />
+    )}
+</main>
+</Layout>

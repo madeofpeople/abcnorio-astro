@@ -1,0 +1,63 @@
+@charset "UTF-8";
+@use "sass:map";
+
+$type-ratios: (
+  "minorSecond": 1.067,
+  "majorSecond": 1.125,
+  "minorThird": 1.2,
+  "majorThird": 1.25,
+  "perfectFourth": 1.333,
+  "augmentedFourth": 1.414,
+  "perfectFifth": 1.5,
+  "goldenRatio": 1.618,
+);
+
+
+$heading-levels: 4,3,2,1;
+$type-base: 16;
+$type-size-ratio: map.get($type-ratios, minorSecond);
+
+body {
+    font-size: 0.85rem;
+    color: var(--color-text);
+    font-family: "Source Sans 3", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    font-family: "Special Elite", monospace;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.ui-label {
+    font-size: 1rem;
+}
+
+h1 {
+   font-size: #{3 * $type-size-ratio}rem;
+
+}
+
+h2 {
+    font-size: #{1.75 * $type-size-ratio}rem;
+
+}
+
+h3 {
+    font-size: #{1.25 * $type-size-ratio}rem;
+    font-weight: 700;
+}
+
+h4 {
+    font-size: #{1 * $type-size-ratio}rem;
+}
+
+h5 {
+    font-size: 1rem;
+}

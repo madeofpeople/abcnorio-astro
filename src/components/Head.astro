@@ -1,0 +1,53 @@
+---
+import { Font } from 'astro:assets';
+import { Seo } from 'astro-seo-meta';
+import '@styles/global.scss';
+
+const {
+  title = 'ABC No Rio',
+  description = 'ABC No Rio collectives and events',
+  keywords = ['abc no rio', 'collectives', 'events'],
+  icon = '/favicon/favicon.ico',
+  canonical,
+  ogImage,
+  twitterSite,
+  twitterCard = 'summary_large_image',
+} = Astro.props;
+
+
+const facebook = canonical || ogImage
+  ? {
+      ...(canonical ? { url: canonical } : {}),
+      ...(ogImage ? { image: ogImage } : {}),
+      type: 'website' as const,
+    }
+  : undefined;
+
+const twitter = ogImage || twitterSite
+  ? {
+      ...(ogImage ? { image: ogImage } : {}),
+      ...(twitterSite ? { site: twitterSite } : {}),
+      card: twitterCard,
+    }
+  : undefined;
+---
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <Font cssVariable="--font-impact-label" />
+    <Font cssVariable="--font-impact-label-reversed" />
+    <Seo
+      title={title}
+      description={description}
+      keywords={keywords}
+      icon={icon}
+      facebook={facebook}
+      twitter={twitter}
+    />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Special+Elite&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Special+Elite&display=swap" rel="stylesheet">
+
+</head>

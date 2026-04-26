@@ -1,0 +1,33 @@
+@mixin styles {
+    .toggle {
+        position: fixed;
+        top: 1.2rem;
+        right: 1.25rem;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: none;
+        color: var(--color-nav-link);
+        font-size: 1.5rem;
+        cursor: pointer;
+        border-radius: 0;
+        background-color: var(--color-menu-toggle-bg, #0f0);
+
+        .line {
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: transform 220ms ease, opacity 180ms linear;
+        }
+
+        &[aria-expanded="true"] .top {
+            transform: translateY(20px) rotate(45deg);
+        }
+
+        &[aria-expanded="true"] .middle {
+            opacity: 0;
+        }
+
+        &[aria-expanded="true"] .bottom {
+            transform: translateY(-20px) rotate(-45deg);
+        }
+    }
+}

@@ -1,0 +1,253 @@
+---
+import Layout from "../../layouts/event.astro";
+import Block from "../../components/wp-blocks/generic-block.astro";
+import ATC from "../../components/AddToCalendar/AddToCalendar.astro";
+import { SITE_URL, REST_PATH } from "@util/paths.js";
+import { fetchPostBlocksCachedByPostModified } from "@util/blocks.js";
+import { buildPostSeo } from "@util/seo.js";
+import { fetchAllWpItemsWithBuildCache } from "@util/build-cache.js";
+
+const { slug } = Astro.params;
+const { post } = Astro.props as any;
+const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const seo = buildPostSeo({
+  post,
+  siteUrl: SITE_URL,
+  pathname: `/events/${slug}/`,
+});
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function formatEventDate(raw: string) {
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return null;
+
+  const weekday = weekdays[d.getDay()];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  const year = d.getFullYear();
+  const hour = d.getHours() % 12 || 12;
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const ampm = d.getHours() < 12 ? "AM" : "PM";
+
+  return {
+    datetime: raw.replace(" ", "T"),
+    dateLabel: `${weekday}, ${month} ${day}, ${year}`,
+    timeLabel: `@ ${hour}:${minutes} ${ampm}`,
+  };
+}
+
+const parseDate = (aDate: any) => {
+  const d = new Date(aDate);
+  if (Number.isNaN(d.getTime())) {
+    return null;
+  }
+
+  const year = d.getFullYear();
+  const monthIndex = d.getMonth();
+  const date = d.getDate().toString().padStart(2, "0");
+  const hours = d.getHours();
+  const minutes = d.getMinutes();
+  const ampm = hours < 12 ? "AM" : "PM";
+  const weekday = d.getDay();
+
+  return {
+    year: year.toString(),
+    date,
+    ampm,
+    display_month: months[monthIndex],
+    display_hours: hours % 12 || 12,
+    display_minutes: minutes.toString().padStart(2, "0"),
+    weekday: weekdays[weekday],
+  };
+};
+
+const meta = post?.meta || {};
+const acf =
+  post?.acf && typeof post.acf === "object" && !Array.isArray(post.acf)
+    ? post.acf
+    : {};
+const readField = (key: string) => meta?.[key] ?? acf?.[key] ?? "";
+const startDate = readField("event_start_date");
+const endDate = readField("event_end_date");
+const location = readField("event_venue_name");
+const timezone = readField("event_timezone");
+const venueName = readField("event_venue_name");
+const venueAddress = readField("event_venue_address");
+const ticketsURL = readField("event_tickets_url");
+const eventDetails: Array<{ detail_label?: string; detail_text?: string }> =
+  Array.isArray(acf?.event_details) ? acf.event_details : [];
+const featuredImage = post?._embedded?.["wp:featuredmedia"]?.[0];
+const featuredImageUrl = featuredImage?.url ?? "";
+const featuredImageAlt = featuredImage?.alt_text ?? "";
+
+let display_date;
+let display_time;
+const startFormatted = formatEventDate(startDate);
+const endFormatted = formatEventDate(endDate);
+
+if (startDate && endDate) {
+  const sd = parseDate(startDate);
+  const ed = parseDate(endDate);
+  if (sd && ed) {
+    display_date = `${sd.weekday}, ${sd.display_month} ${sd.date}, ${sd.year}`;
+    display_time = `@ ${sd.display_hours}:${sd.display_minutes} ${sd.ampm} - ${ed.display_hours}:${ed.display_minutes} ${ed.ampm}`;
+  }
+}
+
+export async function getStaticPaths() {
+  const events = await fetchAllWpItemsWithBuildCache(
+    `${REST_PATH}events?_embed=wp:featuredmedia`,
+    { defaultValue: [] },
+  );
+
+  return events
+    .map((post: any) => {
+      if (!post?.slug) {
+        return null;
+      }
+      return {
+        params: { slug: post.slug },
+        props: { post },
+      };
+    })
+    .filter(Boolean);
+}
+---
+
+<Layout
+  title={seo.title}
+  description={seo.description}
+  canonical={seo.canonical}
+  ogImage={seo.ogImage}
+>
+  <section class="event-header" slot="event_header">
+    {
+      display_date && display_time && (
+        <time>
+          <div>{display_date}</div>
+          <div>{display_time}</div>
+        </time>
+      )
+    }
+
+    <h1 set:html={post?.title?.rendered} />
+
+    {
+      (venueName || venueAddress) && (
+        <div class="start-date">
+          <strong>Venue details:</strong> {venueName && <h4>{venueName}</h4>}
+          {venueAddress && <div>{venueAddress}</div>}
+        </div>
+      )
+    }
+    <!-- {
+      location && (
+        <div class="location">
+          <strong>Venue:</strong> {location}
+        </div>
+      )
+    } -->
+    <!-- 
+    {
+      startFormatted && (
+        <div class="start-date">
+          <strong>Start:</strong> {startFormatted.dateLabel}{" "}
+          {startFormatted.timeLabel}
+        </div>
+      )
+    }
+
+    {
+      endFormatted && (
+        <div class="end-date">
+          <strong>End:</strong> {endFormatted.dateLabel}{" "}
+          {endFormatted.timeLabel}
+        </div>
+      )
+    } -->
+
+
+  </section>
+
+  <article class="event-main" slot="main">
+    {
+      featuredImageUrl && (
+        <img
+          src={featuredImageUrl}
+          alt={featuredImageAlt}
+          loading="eager"
+          decoding="async"
+        />
+      )
+    }
+    {
+      blocks.map((block: any) => (
+        <Block
+          component={block.name}
+          attributes={block.attributes}
+          innerBlocks={block.innerBlocks || null}
+        />
+      ))
+    }
+  </article>
+
+  <aside slot="sidebar">
+    {
+      startDate && (
+        <ATC
+          event={{
+            title: post?.title?.rendered ?? "",
+            description: post?.excerpt?.rendered ?? "",
+            event_start_date: startDate,
+            event_end_date: endDate || startDate,
+            event_venue_name: location,
+            event_timezone: timezone,
+          }}
+        />
+      )
+    }
+
+    {
+      ticketsURL && (
+        <div class="end-date">
+          <strong>Tickets:</strong>{" "}
+          <a href={ticketsURL} target="_blank" rel="noopener noreferrer">
+            {ticketsURL}
+          </a>
+        </div>
+      )
+    }
+
+    {
+      eventDetails.length > 0 && (
+        <dl class="event-details">
+          {eventDetails.map(({ detail_label, detail_text }) =>
+            detail_label || detail_text ? (
+              <div class="event-details__row">
+                {detail_label && <dt>{detail_label}</dt>}
+                {detail_text && <dd>{detail_text}</dd>}
+              </div>
+            ) : null,
+          )}
+        </dl>
+      )
+    }
+  </aside>
+</Layout>
+<style></style>

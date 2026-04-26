@@ -1,0 +1,89 @@
+---
+interface Props {
+    currentPage: number;
+    totalPages: number;
+    hxGet: string;
+    hrefBase?: string;
+    hxTarget: string;
+    hxInclude?: string;
+    id?: string;
+    oob?: boolean;
+}
+
+const { currentPage, totalPages, hxGet, hrefBase, hxTarget, hxInclude, id = 'pagination', oob = false } = Astro.props;
+const sep = hxGet.includes('?') ? '&' : '?';
+const linkBase = hrefBase ?? hxGet;
+const linkSep = linkBase.includes('?') ? '&' : '?';
+const linkForPage = (page: number) => `${linkBase}${linkSep}page=${page}`;
+---
+<nav
+    id={id}
+    class="pagination"
+    aria-label="Pagination"
+    {...(oob ? { 'hx-swap-oob': 'outerHTML' } : {})}
+>
+    {totalPages > 1 && (
+        <ul>
+            {currentPage > 1 && (
+                <li>
+                    <a href={linkForPage(currentPage - 1)}
+                       hx-get={`${hxGet}${sep}page=${currentPage - 1}`}
+                       hx-target={hxTarget}
+                       hx-swap="outerHTML"
+                       hx-include={hxInclude}>
+                        &laquo; Prev
+                    </a>
+                </li>
+            )}
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                <li>
+                    <a href={linkForPage(p)}
+                       hx-get={`${hxGet}${sep}page=${p}`}
+                       hx-target={hxTarget}
+                       hx-swap="outerHTML"
+                       hx-include={hxInclude}
+                       aria-current={p === currentPage ? 'page' : undefined}
+                       class={p === currentPage ? 'is-current' : ''}>
+                        {p}
+                    </a>
+                </li>
+            ))}
+            {currentPage < totalPages && (
+                <li>
+                    <a href={linkForPage(currentPage + 1)}
+                       hx-get={`${hxGet}${sep}page=${currentPage + 1}`}
+                       hx-target={hxTarget}
+                       hx-swap="outerHTML"
+                       hx-include={hxInclude}>
+                        Next &raquo;
+                    </a>
+                </li>
+            )}
+        </ul>
+    )}
+</nav>
+<style>
+    .pagination ul {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        li a {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            text-decoration: none;
+            color: inherit;
+            &:hover,
+            &:focus {
+                background: #f0f0f0;
+            }
+            &.is-current {
+                font-weight: bold;
+                border-color: currentColor;
+            }
+        }
+    }
+</style>

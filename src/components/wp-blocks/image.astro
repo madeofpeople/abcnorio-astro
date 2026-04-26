@@ -1,0 +1,167 @@
+---
+import { Image as AstroImage } from "astro:assets";
+import { CMS_URL } from "@util/paths.js";
+const { attributes } = Astro.props;
+const alt = attributes?.alt ?? "";
+const sizeSlug = attributes?.sizeSlug ?? "";
+const rawSrcset = attributes?.srcset ?? "";
+const rawSizes = attributes?.sizes ?? attributes?.sizes_attr;
+const variantMap =
+  attributes?.sizes_data ?? attributes?.media_details?.sizes ?? {};
+
+type Variant = {
+  name: string;
+  sourceUrl: string;
+  width: number;
+  height?: number;
+};
+
+type ResolvedImageSource = {
+  url?: string;
+  canOptimizeWithAstro: boolean;
+};
+
+const cmsOrigin = (() => {
+  try {
+    return new URL(CMS_URL).origin;
+  } catch {
+    return "";
+  }
+})();
+
+function resolveWordPressImageUrl(value?: string): ResolvedImageSource {
+  if (!value || !cmsOrigin) {
+    return {
+      url: value,
+      canOptimizeWithAstro: Boolean(value),
+    };
+  }
+
+  try {
+    const url = new URL(value);
+    const isLegacyUploadsPath = url.pathname.startsWith("/wp-content/uploads/");
+    const isCurrentUploadsPath = url.pathname.startsWith("/app/uploads/");
+    const isWordPressLikeUploadsHost =
+      url.hostname.includes("abcnorio.org") ||
+      url.hostname.includes("itztlacoliuhqui.org");
+    const looksLikeImageFile = /\.(avif|gif|jpe?g|png|webp)$/i.test(url.pathname);
+
+    if (!isWordPressLikeUploadsHost) {
+      return {
+        url: value,
+        canOptimizeWithAstro: true,
+      };
+    }
+
+    if (!isLegacyUploadsPath && !isCurrentUploadsPath) {
+      return {
+        url: value,
+        canOptimizeWithAstro: !looksLikeImageFile,
+      };
+    }
+
+    const canonicalPath = isLegacyUploadsPath
+      ? url.pathname.replace("/wp-content/uploads/", "/app/uploads/")
+      : url.pathname;
+
+    return {
+      url: `${cmsOrigin}${canonicalPath}`,
+      canOptimizeWithAstro: true,
+    };
+  } catch {
+    return {
+      url: value,
+      canOptimizeWithAstro: Boolean(value),
+    };
+  }
+}
+
+const variants: Variant[] = [];
+
+for (const [name, value] of Object.entries(variantMap)) {
+  const variant = value as {
+    source_url?: string;
+    width?: number;
+    height?: number;
+  };
+
+  if (!variant.source_url || !variant.width) {
+    continue;
+  }
+
+  const resolvedVariantSource = resolveWordPressImageUrl(variant.source_url);
+
+  variants.push({
+    name,
+    sourceUrl: resolvedVariantSource.url || variant.source_url,
+    width: Number(variant.width),
+    height: variant.height ? Number(variant.height) : undefined,
+  });
+}
+
+variants.sort((a, b) => a.width - b.width);
+
+const preferredVariant =
+  variants.find((variant) => variant.name === sizeSlug) ||
+  variants.find((variant) => variant.name === "full") ||
+  variants[variants.length - 1];
+
+const resolvedSource = resolveWordPressImageUrl(
+  attributes?.url || attributes?.src || preferredVariant?.sourceUrl,
+);
+const src = resolvedSource.url;
+
+const width = Number(attributes?.width || preferredVariant?.width) || undefined;
+
+const explicitHeight = Number(attributes?.height || preferredVariant?.height) || undefined;
+const fallbackAspectRatio =
+  preferredVariant?.width && preferredVariant?.height
+    ? preferredVariant.height / preferredVariant.width
+    : undefined;
+const height = explicitHeight || (
+  width && fallbackAspectRatio
+    ? Math.round(width * fallbackAspectRatio)
+    : undefined
+);
+
+const sizes = rawSizes || undefined;
+const widths = rawSrcset
+  ? rawSrcset
+      .split(",")
+      .map((candidate: string) =>
+        Number(candidate.trim().split(" ").at(-1)?.replace("w", "")),
+      )
+      .filter((value: number) => Number.isFinite(value) && value > 0)
+  : variants.map((variant) => variant.width);
+
+const altText = src
+  ? alt
+  : "No source URL was available from attributes.url, attributes.src, or attributes.sizes_data.";
+--- 
+
+{
+  !resolvedSource.canOptimizeWithAstro ? (
+    <img
+      src={src}
+      srcset={rawSrcset || undefined}
+      sizes={sizes}
+      alt={altText}
+      width={width}
+      height={height}
+      loading="eager"
+      decoding="async"
+    />
+  ) : (
+    <AstroImage
+      src={src}
+      widths={widths.length > 0 ? widths : undefined}
+      sizes={sizes}
+      alt={altText}
+      width={width}
+      height={height}
+      loading="eager"
+      inferSize={!width || !height}
+      decoding="async"
+    />
+  )
+}

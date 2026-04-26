@@ -1,0 +1,59 @@
+---
+import { getEvents } from '@lib/events/events.js'
+import EventListing from "@components/Events/EventListing.astro";
+import EventFilters from "@components/Events/Filters.astro";
+import Pagination from '@components/Pagination/Pagination.astro';
+import { POSTS_PER_PAGE } from '@consts';
+
+const page = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const hrefParams = new URLSearchParams(Astro.url.searchParams);
+hrefParams.delete('page');
+const hrefBase = `/events${hrefParams.toString() ? `?${hrefParams.toString()}` : ''}`;
+
+const now = new Date().toISOString();
+const dateFilter = Astro.url.searchParams.get('date-filter') ?? 'upcoming';
+const filters: Record<string, string> = {};
+
+const explicitAfter = Astro.url.searchParams.get('event_start_after');
+const effectiveDateFilter = (dateFilter === 'upcoming' && explicitAfter && explicitAfter < now)
+    ? 'all'
+    : dateFilter;
+
+if (effectiveDateFilter === 'upcoming') {
+    filters['event_start_after'] = now;
+} else if (effectiveDateFilter === 'past') {
+    filters['event_start_before'] = now;
+}
+
+for (const param of ['event_start_after', 'event_start_before', 'event_type', 'event_tag', 'collective_association']) {
+    const val = Astro.url.searchParams.get(param);
+    if (val) filters[param] = val;
+}
+
+filters['orderby'] = 'event_start_date';
+filters['order'] = Astro.url.searchParams.get('order') ?? 'desc';
+
+const { events, totalPages } = await getEvents(filters, { page, perPage: POSTS_PER_PAGE });
+---
+<events-panel>
+    <EventFilters
+        dateFilter={effectiveDateFilter}
+        eventType={Astro.url.searchParams.get('event_type') ?? ''}
+        collectiveAssociation={Astro.url.searchParams.get('collective_association') ?? ''}
+        order={Astro.url.searchParams.get('order') ?? 'desc'}
+        eventStartBefore={Astro.url.searchParams.get('event_start_before') ?? ''}
+        eventStartAfter={Astro.url.searchParams.get('event_start_after') ?? ''}
+    />
+    <div class="events_listing">
+        <EventListing events={events} />
+    </div>
+    <Pagination
+        id="pagination"
+        currentPage={page}
+        totalPages={totalPages}
+        hxGet="/events/listing"
+        hrefBase={hrefBase}
+        hxTarget="#events__listing"
+        hxInclude="#event-filters-form"
+    />
+</events-panel>
