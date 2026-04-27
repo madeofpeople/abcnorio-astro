@@ -13,6 +13,10 @@ const seo = buildPostSeo({
 });
 
 export async function getStaticPaths() {
+  if ((process.env.SCOPE || 'full') !== 'full') {
+    return [];
+  }
+
   const reservedSlugs = ['about', 'collectives', 'events', 'programming'];
   const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}pages?parent=0`, { defaultValue: [] });
   return posts

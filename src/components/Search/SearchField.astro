@@ -22,32 +22,35 @@ const { q = '' } = Astro.props;
     )}
 </div>
 <script>
-    import htmx from 'htmx.org';
-    window.htmx = htmx;
+    const htmx = (window as any).htmx;
+    if (!htmx) {
+        // Progressive enhancement fallback: normal search submit still works.
+    } else {
 
-    const announceEl = document.querySelector('#search-announce');
+        const announceEl = document.querySelector('#search-announce');
 
-    const handleBeforeRequest = (event: any) => {
-        if (event?.detail?.target?.id !== 'search-results') return;
-        event.detail.target.setAttribute('aria-busy', 'true');
-        if (announceEl) {
-            announceEl.textContent = 'Loading search results.';
-            announceEl.classList.add('announcement_visible');
-            announceEl.classList.remove('sr-only');
-        }
-    };
+        const handleBeforeRequest = (event: any) => {
+            if (event?.detail?.target?.id !== 'search-results') return;
+            event.detail.target.setAttribute('aria-busy', 'true');
+            if (announceEl) {
+                announceEl.textContent = 'Loading search results.';
+                announceEl.classList.add('announcement_visible');
+                announceEl.classList.remove('sr-only');
+            }
+        };
 
-    const handleAfterSwap = (event: any) => {
-        if (event?.detail?.target?.id !== 'search-results') return;
-        const resultsEl = event.detail.target;
-        const count = resultsEl.querySelectorAll('article').length;
-        resultsEl.setAttribute('aria-busy', 'false');
-        if (announceEl) {
-            announceEl.textContent = `Loaded ${count} result${count === 1 ? '' : 's'}.`;
-            announceEl.classList.remove('announcement_visible');
-        }
-    };
+        const handleAfterSwap = (event: any) => {
+            if (event?.detail?.target?.id !== 'search-results') return;
+            const resultsEl = event.detail.target;
+            const count = resultsEl.querySelectorAll('article').length;
+            resultsEl.setAttribute('aria-busy', 'false');
+            if (announceEl) {
+                announceEl.textContent = `Loaded ${count} result${count === 1 ? '' : 's'}.`;
+                announceEl.classList.remove('announcement_visible');
+            }
+        };
 
-    document.body.addEventListener('htmx:beforeRequest', handleBeforeRequest);
-    document.body.addEventListener('htmx:afterSwap', handleAfterSwap);
+        document.body.addEventListener('htmx:beforeRequest', handleBeforeRequest);
+        document.body.addEventListener('htmx:afterSwap', handleAfterSwap);
+    }
 </script>

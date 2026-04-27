@@ -10,7 +10,11 @@ const {
   ogImage,
   twitterSite,
   twitterCard,
+  loadHtmx,
 } = Astro.props;
+
+const routeNeedsHtmx = Astro.url.pathname.startsWith('/events') || Astro.url.pathname.startsWith('/search');
+const shouldLoadHtmx = loadHtmx ?? routeNeedsHtmx;
 ---
 <html lang="en">
   <Head
@@ -21,6 +25,7 @@ const {
     ogImage={ogImage}
     twitterSite={twitterSite}
     twitterCard={twitterCard}
+    loadHtmx={shouldLoadHtmx}
   />
   <body>
     <Header />

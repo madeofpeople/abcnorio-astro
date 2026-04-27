@@ -1,4 +1,6 @@
 ---
+export const prerender = (process.env.SCOPE || 'full') === 'full';
+
 import Layout from '@layouts/index.astro';
 import ASCIIHeader from '@components/ASCIIHeader.astro';
 import Listing from '@components/Listing.astro';

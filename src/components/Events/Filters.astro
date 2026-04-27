@@ -140,46 +140,50 @@ const [eventTypes, collectives] = await Promise.all([
     </div>
 </event-filters>
 <script>
-    import htmx from "htmx.org";
-    // Disable HTMX history caching — back/forward navigation uses browser-native
-    // bfcache or a full SSR reload instead of HTMX's localStorage snapshot restore,
-    // which could restore stale or unstyled body content.
-    (htmx.config as any).disableHistoryCaching = true;
-    window.htmx = htmx;
-    const filtersEl = document.querySelector("event-filters");
-
-    if (!filtersEl || filtersEl.getAttribute("data-htmx-bound") === "true") {
-        // Nothing to bind or already bound on this node.
+    const htmx = (window as any).htmx;
+    if (!htmx) {
+        // Progressive enhancement fallback: form submit still works without htmx.
     } else {
-        filtersEl.setAttribute("data-htmx-bound", "true");
 
-        const announceEl = filtersEl.querySelector("#announce");
+        // Disable HTMX history caching — back/forward navigation uses browser-native
+        // bfcache or a full SSR reload instead of HTMX's localStorage snapshot restore,
+        // which could restore stale or unstyled body content.
+        (htmx.config as any).disableHistoryCaching = true;
+        const filtersEl = document.querySelector("event-filters");
 
-        const handleBeforeRequest = (event: any) => {
-            if (event?.detail?.target?.id !== "events__listing") return;
-            event.detail.target.classList.add("is-transitioning-out");
-            event.detail.target.setAttribute("aria-busy", "true");
-            if (announceEl) {
-                announceEl.textContent = "Loading events.";
-                announceEl.classList.add("announcement_visible");
-                announceEl.classList.remove("sr-only");
-            }
-        };
+        if (!filtersEl || filtersEl.getAttribute("data-htmx-bound") === "true") {
+            // Nothing to bind or already bound on this node.
+        } else {
+            filtersEl.setAttribute("data-htmx-bound", "true");
 
-        const handleAfterSwap = (event: any) => {
-            if (event?.detail?.target?.id !== "events__listing") return;
-            const listingEl = event.detail.target;
-            listingEl.classList.remove("is-transitioning-out");
-            const count = listingEl.querySelectorAll("article").length;
-            listingEl.setAttribute("aria-busy", "false");
-            if (announceEl) {
-                announceEl.textContent = `Loaded ${count} event${count === 1 ? "" : "s"}.`;
-                announceEl.classList.remove("announcement_visible");
-                announceEl.classList.add("sr-only");
-            }
-        };
+            const announceEl = filtersEl.querySelector("#announce");
 
-        document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
-        document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+            const handleBeforeRequest = (event: any) => {
+                if (event?.detail?.target?.id !== "events__listing") return;
+                event.detail.target.classList.add("is-transitioning-out");
+                event.detail.target.setAttribute("aria-busy", "true");
+                if (announceEl) {
+                    announceEl.textContent = "Loading events.";
+                    announceEl.classList.add("announcement_visible");
+                    announceEl.classList.remove("sr-only");
+                }
+            };
+
+            const handleAfterSwap = (event: any) => {
+                if (event?.detail?.target?.id !== "events__listing") return;
+                const listingEl = event.detail.target;
+                listingEl.classList.remove("is-transitioning-out");
+                const count = listingEl.querySelectorAll("article").length;
+                listingEl.setAttribute("aria-busy", "false");
+                if (announceEl) {
+                    announceEl.textContent = `Loaded ${count} event${count === 1 ? "" : "s"}.`;
+                    announceEl.classList.remove("announcement_visible");
+                    announceEl.classList.add("sr-only");
+                }
+            };
+
+            document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
+            document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+        }
     }
 </script>

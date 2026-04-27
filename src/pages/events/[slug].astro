@@ -111,6 +111,11 @@ if (startDate && endDate) {
 }
 
 export async function getStaticPaths() {
+  const scope = process.env.SCOPE || 'full';
+  if (scope !== 'full' && scope !== 'events') {
+    return [];
+  }
+
   const events = await fetchAllWpItemsWithBuildCache(
     `${REST_PATH}events?_embed=wp:featuredmedia`,
     { defaultValue: [] },

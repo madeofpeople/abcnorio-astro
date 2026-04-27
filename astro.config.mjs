@@ -105,7 +105,7 @@ export default defineConfig({
       },
     },
     optimizeDeps: {
-      include: ['luxon', 'figlet', 'ics', 'file-saver'],
+      include: ['ics', 'file-saver'],
     },
     resolve: {
       alias: {        
@@ -129,10 +129,6 @@ export default defineConfig({
 
   outDir,
   compressHTML: (mode === 'production') ? true : false,
-
-  image: {
-    remotePatterns: [{ protocol: 'https' }],
-  },
 
   integrations: [
     icon()

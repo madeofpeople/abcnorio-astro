@@ -117,34 +117,37 @@ const tags = tagsRes;
     />
 </events-panel>
 <script>
-    import htmx from "htmx.org";
-    window.htmx = htmx;
+    const htmx = (window as any).htmx;
+    if (!htmx) {
+        // Progressive enhancement fallback: form submit still works without htmx.
+    } else {
 
-    const panelEl = document.querySelector("events-panel");
-    const announceEl = panelEl?.querySelector("#announce");
+        const panelEl = document.querySelector("events-panel");
+        const announceEl = panelEl?.querySelector("#announce");
 
-    const handleBeforeRequest = (event: any) => {
-        if (event?.detail?.target?.id !== "events__listing") return;
-        event.detail.target.classList.add("is-transitioning-out");
-        event.detail.target.setAttribute("aria-busy", "true");
-        if (announceEl) {
-            announceEl.textContent = "Loading events.";
-            announceEl.classList.add("announcement_visible");
-        }
-    };
+        const handleBeforeRequest = (event: any) => {
+            if (event?.detail?.target?.id !== "events__listing") return;
+            event.detail.target.classList.add("is-transitioning-out");
+            event.detail.target.setAttribute("aria-busy", "true");
+            if (announceEl) {
+                announceEl.textContent = "Loading events.";
+                announceEl.classList.add("announcement_visible");
+            }
+        };
 
-    const handleAfterSwap = (event: any) => {
-        if (event?.detail?.target?.id !== "events__listing") return;
-        const listingEl = event.detail.target;
-        listingEl.classList.remove("is-transitioning-out");
-        const count = listingEl.querySelectorAll("article").length;
-        listingEl.setAttribute("aria-busy", "false");
-        if (announceEl) {
-            announceEl.textContent = `Loaded ${count} event${count === 1 ? "" : "s"}.`;
-            announceEl.classList.remove("announcement_visible");
-        }
-    };
+        const handleAfterSwap = (event: any) => {
+            if (event?.detail?.target?.id !== "events__listing") return;
+            const listingEl = event.detail.target;
+            listingEl.classList.remove("is-transitioning-out");
+            const count = listingEl.querySelectorAll("article").length;
+            listingEl.setAttribute("aria-busy", "false");
+            if (announceEl) {
+                announceEl.textContent = `Loaded ${count} event${count === 1 ? "" : "s"}.`;
+                announceEl.classList.remove("announcement_visible");
+            }
+        };
 
-    document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
-    document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+        document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
+        document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+    }
 </script>

@@ -17,6 +17,11 @@ const seo = buildPostSeo({
 });
 
 export async function getStaticPaths() {
+  const scope = process.env.SCOPE || 'full';
+  if (scope !== 'full' && scope !== 'about') {
+    return [];
+  }
+
   const parentPages = await fetchJsonWithBuildCache(`${REST_PATH}pages?slug=about`, { defaultValue: [] });
   const aboutId = parentPages?.[0]?.id;
 

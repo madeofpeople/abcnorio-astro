@@ -23,6 +23,11 @@ const collectiveTermId = post?.['collective-associations']?.[0];
 // It does not have access to other scopes, use import.meta.env to avoid needless duplication.
 // As a result, it makes sense to do most of the mapping here rather than in the frontmatter.
 export async function getStaticPaths() {
+  const scope = process.env.SCOPE || 'full';
+  if (scope !== 'full' && scope !== 'collectives') {
+    return [];
+  }
+
   const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}collectives`, { defaultValue: [] });
   return posts.map((post:any) => ({
     params: { slug: post.slug },

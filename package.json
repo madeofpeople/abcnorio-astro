@@ -27,9 +27,7 @@
     "astro-seo-meta": "^6.0.0",
     "figlet": "^1.11.0",
     "file-saver": "^2.0.5",
-    "htmx.org": "^2.0.8",
     "ics": "^3.10.0",
-    "luxon": "^3.7.2",
     "scss-reset": "^1.4.6",
     "typescript": "^5.9.3"
   },

@@ -12,6 +12,7 @@ const {
   ogImage,
   twitterSite,
   twitterCard = 'summary_large_image',
+  loadHtmx = false,
 } = Astro.props;
 
 
@@ -49,5 +50,7 @@ const twitter = ogImage || twitterSite
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Special+Elite&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Special+Elite&display=swap" rel="stylesheet">
+    {loadHtmx && <script is:inline src="/vendor/htmx.min.js"></script>}
+    {loadHtmx && <script is:inline>window.htmx && (window.htmx.config.allowEval = false);</script>}
 
 </head>
