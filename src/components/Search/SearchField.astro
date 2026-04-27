@@ -1,56 +1,130 @@
 ---
-interface Props {
-    q?: string;
-}
-const { q = '' } = Astro.props;
+// Check if we're on the dedicated search page (not a sidebar/nav search)
+const isSearchPage = Astro.url?.pathname?.startsWith('/search');
 ---
-<div class="search">
-    {Astro.url?.pathname === '/search' ? (
-        <form id="search-form" action="/search"
-              aria-controls="search-results"
-              hx-get="/search/results" hx-target="#search-results" hx-swap="outerHTML"
-              hx-trigger="load, submit">
-            <input type="text" name="q" placeholder="Search..." required value={q}>
-            <button type="submit">Search</button>
-        </form>
-        <announce id="search-announce" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></announce>
-    ) : (
-        <form id="search-form" action="/search">
-            <input type="text" name="q" placeholder="Search..." required value={q}>
-            <button type="submit">Search</button>
-        </form>
+<div class="search" role="search" aria-label="Site search">
+    <form id="search-form" action="/search" method="get"
+          aria-controls={isSearchPage ? 'search-results' : undefined}
+          data-search-api="/search/api"
+          data-search-page-url="/search">
+        <label class="sr-only" for="search-query">Search site</label>
+        <input id="search-query" type="search" name="q" placeholder="Search..." enterkeyhint="search" required>
+        <button type="submit">Search</button>
+    </form>
+    {isSearchPage && (
+        <div id="search-announce" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
     )}
 </div>
 <script>
-    const htmx = (window as any).htmx;
-    if (!htmx) {
-        // Progressive enhancement fallback: normal search submit still works.
-    } else {
+    const form = document.getElementById('search-form') as HTMLFormElement | null;
+    const searchApi = form?.dataset?.searchApi;
+    const searchPageUrl = form?.dataset?.searchPageUrl ?? '/search';
+    const input = form?.querySelector<HTMLInputElement>('input[name="q"]') ?? null;
 
-        const announceEl = document.querySelector('#search-announce');
+    function buildSearchPageUrl(query: string) {
+        const url = new URL(searchPageUrl, window.location.origin);
+        url.searchParams.set('q', query);
+        return url.toString();
+    }
 
-        const handleBeforeRequest = (event: any) => {
-            if (event?.detail?.target?.id !== 'search-results') return;
-            event.detail.target.setAttribute('aria-busy', 'true');
-            if (announceEl) {
-                announceEl.textContent = 'Loading search results.';
-                announceEl.classList.add('announcement_visible');
-                announceEl.classList.remove('sr-only');
+    if (form && searchApi) {
+        const resultsEl = document.getElementById('search-results');
+        const announceEl = document.getElementById('search-announce');
+
+        const months   = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        function formatEventDate(raw: string) {
+            const d = new Date(raw);
+            if (isNaN(d.getTime())) return null;
+            const hour = d.getHours() % 12 || 12;
+            const mins = String(d.getMinutes()).padStart(2, '0');
+            return {
+                datetime: raw.replace(' ', 'T'),
+                label: `${weekdays[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} @ ${hour}:${mins}`,
+            };
+        }
+
+        function renderResults(q: string, grouped: Record<string, any[]>) {
+            if (!resultsEl) return;
+            const allResults = Object.values(grouped).flat();
+
+            if (allResults.length === 0) {
+                resultsEl.innerHTML = `<p class="search__empty">No results for &ldquo;${q}&rdquo;.</p>`;
+                if (announceEl) announceEl.textContent = 'No results found.';
+                resultsEl.setAttribute('aria-busy', 'false');
+                return;
             }
-        };
 
-        const handleAfterSwap = (event: any) => {
-            if (event?.detail?.target?.id !== 'search-results') return;
-            const resultsEl = event.detail.target;
-            const count = resultsEl.querySelectorAll('article').length;
+            const html = Object.entries(grouped).map(([type, items]) => {
+                const articles = (items as any[]).map(r => {
+                    const start = r.event_start_date ? formatEventDate(r.event_start_date) : null;
+                    const timeHtml = start
+                        ? `<time datetime="${start.datetime}">${start.label}</time>`
+                        : '';
+                    return `<article class="search__result"><a href="${r.url}">${timeHtml}<p>${r.title}</p></a></article>`;
+                }).join('');
+                return `<div class="search__group search__group--${type}"><h3 class="search__group-label">${type}</h3>${articles}</div>`;
+            }).join('');
+
+            resultsEl.innerHTML = `<section class="search__listing listing">${html}</section>`;
+            const count = allResults.length;
+            if (announceEl) announceEl.textContent = `Loaded ${count} result${count === 1 ? '' : 's'}.`;
             resultsEl.setAttribute('aria-busy', 'false');
-            if (announceEl) {
-                announceEl.textContent = `Loaded ${count} result${count === 1 ? '' : 's'}.`;
-                announceEl.classList.remove('announcement_visible');
-            }
-        };
+        }
 
-        document.body.addEventListener('htmx:beforeRequest', handleBeforeRequest);
-        document.body.addEventListener('htmx:afterSwap', handleAfterSwap);
+        async function doSearch(q: string) {
+            if (!resultsEl) return;
+            if (q.length < 2) {
+                resultsEl.innerHTML = '';
+                if (announceEl) announceEl.textContent = 'Enter at least 2 characters to search.';
+                resultsEl.setAttribute('aria-busy', 'false');
+                return;
+            }
+
+            resultsEl.setAttribute('aria-busy', 'true');
+            if (announceEl) announceEl.textContent = 'Loading search results.';
+
+            try {
+                const res = await fetch(`${searchApi}?q=${encodeURIComponent(q)}`);
+                if (!res.ok) {
+                    resultsEl.innerHTML = '<p class="search__error">Search failed.</p>';
+                    resultsEl.setAttribute('aria-busy', 'false');
+                    return;
+                }
+                const data = await res.json();
+                renderResults(q, data.results ?? {});
+            } catch {
+                if (resultsEl) {
+                    resultsEl.innerHTML = '<p class="search__error">Search unavailable.</p>';
+                    resultsEl.setAttribute('aria-busy', 'false');
+                }
+            }
+        }
+
+        // Hydrate from URL ?q= on page load
+        if (resultsEl) {
+            const initialQ = new URLSearchParams(window.location.search).get('q')?.trim() ?? '';
+            if (input && initialQ.length > 0) input.value = initialQ;
+            if (initialQ.length >= 2) {
+                doSearch(initialQ);
+            }
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const q = input?.value.trim() ?? '';
+                if (q) {
+                    history.pushState(null, '', buildSearchPageUrl(q));
+                }
+                doSearch(q);
+            });
+        } else {
+            form.addEventListener('submit', (e) => {
+                const q = input?.value.trim() ?? '';
+                if (!q) return;
+                e.preventDefault();
+                window.location.assign(buildSearchPageUrl(q));
+            });
+        }
     }
 </script>

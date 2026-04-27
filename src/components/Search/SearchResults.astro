@@ -1,8 +1,57 @@
 ---
+interface ResultItem {
+    url: string;
+    title: string;
+    event_start_date?: string;
+}
 
+interface Props {
+    results?: Record<string, ResultItem[]>;
+    query?: string;
+}
+
+const { results = {}, query = '' } = Astro.props;
+
+const months   = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function formatEventDate(raw: string) {
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return null;
+    const hour = d.getHours() % 12 || 12;
+    const mins = String(d.getMinutes()).padStart(2, '0');
+    return {
+        datetime: raw.replace(' ', 'T'),
+        label: `${weekdays[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} @ ${hour}:${mins}`,
+    };
+}
+
+const allResults = Object.values(results).flat();
+const hasResults = allResults.length > 0;
+const showNoResults = query.length >= 2 && !hasResults;
 ---
-<div id="search-results" class="search-results">
-    <!-- Search results will be injected here -->
+<div id="search-results" class="search-results" role="region" aria-label="Search results" aria-busy="false">
+    {hasResults && (
+        <section class="search__listing listing">
+            {Object.entries(results).map(([type, items]) => (
+                <div class={`search__group search__group--${type}`}>
+                    <h3 class="search__group-label">{type}</h3>
+                    {items.map(r => {
+                        const start = r.event_start_date ? formatEventDate(r.event_start_date) : null;
+                        return (
+                            <article class="search__result">
+                                <a href={r.url}>
+                                    {start && <time datetime={start.datetime}>{start.label}</time>}
+                                    <p>{r.title}</p>
+                                </a>
+                            </article>
+                        );
+                    })}
+                </div>
+            ))}
+        </section>
+    )}
+    {showNoResults && <p class="search__empty">No results for &ldquo;{query}&rdquo;.</p>}
 </div>
 <nav id="search-pagination" class="pagination"></nav>
 <style>

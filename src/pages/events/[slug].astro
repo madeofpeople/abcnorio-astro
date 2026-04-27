@@ -95,6 +95,17 @@ const eventDetails: Array<{ detail_label?: string; detail_text?: string }> =
 const featuredImage = post?._embedded?.["wp:featuredmedia"]?.[0];
 const featuredImageUrl = featuredImage?.url ?? "";
 const featuredImageAlt = featuredImage?.alt_text ?? "";
+const eventTypeIds: number[] = Array.isArray(post?.["event-types"])
+  ? post["event-types"]
+  : [];
+const eventTypeTerms = await fetchAllWpItemsWithBuildCache(
+  `${REST_PATH}event-types?per_page=100`,
+  { defaultValue: [] },
+);
+const eventTypeNames = eventTypeTerms
+  .filter((term: any) => eventTypeIds.includes(term?.id))
+  .map((term: any) => term?.name)
+  .filter(Boolean);
 
 let display_date;
 let display_time;
@@ -229,6 +240,16 @@ export async function getStaticPaths() {
     }
 
     {
+      eventTypeNames.length > 0 && (
+        <div class="event-types-taxonomy">
+            {eventTypeNames.map((name: string) => (
+              <a href="#">{name}</a>
+            ))}
+        </div>
+      )
+    }
+
+    {
       ticketsURL && (
         <div class="end-date">
           <strong>Tickets:</strong>{" "}
@@ -255,4 +276,23 @@ export async function getStaticPaths() {
     }
   </aside>
 </Layout>
-<style></style>
+<style>
+  .event-types-taxonomy {
+    margin-top: 2rem;
+    padding: 0.5rem;
+    background-color: var(--color-panel-bg);
+    border-radius: 0.5rem;
+    border: 2px solid #dedede;
+    a {
+      background-color: var(--color-text);
+      display: inline-block;
+      color: #dedede;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      text-decoration: none;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+  }
+</style>
