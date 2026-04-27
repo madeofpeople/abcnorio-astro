@@ -50,7 +50,7 @@ export async function getStaticPaths() {
         ))}
     </article>
     {collectiveTermId && (
-      <CollectiveEventsPanel collectiveTermId={collectiveTermId} pagePath={`/collectives/${slug}/`} server:defer />
+      <CollectiveEventsPanel collectiveTermId={collectiveTermId} server:defer />
     )}
 </main>
 </Layout>

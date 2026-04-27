@@ -1,189 +1,45 @@
 ---
 import { getEvents } from "@lib/events/events.js";
 import EventListing from "@components/Events/EventListing.astro";
-import Pagination from "@components/Pagination/Pagination.astro";
-import { REST_PATH } from "@util/paths.js";
-import { getOrSetRuntimeCache } from "@util/runtime-cache.js";
-import { POSTS_PER_PAGE } from "@consts";
-import "./_filters.scss";
-import SegmentedControl from "@components/SegmentedControl.astro";
 
 interface Props {
     collectiveTermId: number;
-    pagePath: string;
 }
 
-const { collectiveTermId, pagePath } = Astro.props;
-const page = parseInt(Astro.url.searchParams.get("page") ?? "1", 10);
-const dateFilter = Astro.url.searchParams.get("date-filter") ?? "upcoming";
-const eventTag = Astro.url.searchParams.get("event_tag") ?? "";
-const order = Astro.url.searchParams.get("order") ?? "desc";
-const hrefParams = new URLSearchParams(Astro.url.searchParams);
-hrefParams.set("collective_association", String(collectiveTermId));
-hrefParams.delete("page");
-const hrefBase = `${pagePath}${hrefParams.toString() ? `?${hrefParams.toString()}` : ""}`;
+const { collectiveTermId } = Astro.props;
 
 const now = new Date().toISOString();
-const effectiveDateFilter = dateFilter;
 
-const upcomingCheckFilters: Record<string, string | number> = {
+const filters: Record<string, string | number> = {
     orderby: "event_start_date",
     order: "asc",
     collective_association: collectiveTermId,
     event_start_after: now,
 };
 
-const { events: upcomingEvents } = await getEvents(upcomingCheckFilters, { page: 1, perPage: 1 });
-const hasUpcomingEvents = upcomingEvents.length > 0;
+async function getAllUpcomingEvents(): Promise<any[]> {
+    const perPage = 100;
+    let page = 1;
+    let totalPages = 1;
+    const allEvents: any[] = [];
 
-const filters: Record<string, string | number> = {
-    orderby: "event_start_date",
-    order,
-    collective_association: collectiveTermId,
-};
+    while (page <= totalPages) {
+        const { events: pageEvents, totalPages: pageCount } = await getEvents(filters, { page, perPage });
+        totalPages = pageCount;
+        allEvents.push(...pageEvents);
+        page += 1;
+    }
 
-if (effectiveDateFilter === "upcoming") {
-    filters.event_start_after = now;
-} else if (effectiveDateFilter === "past") {
-    filters.event_start_before = now;
+    return allEvents;
 }
 
-if (eventTag) {
-    filters.event_tag = eventTag;
-}
-
-const TAXONOMY_TTL_MS = 5 * 60 * 1000;
-const [{ events, totalPages }, tagsRes] = await Promise.all([
-    getEvents(filters, { page, perPage: POSTS_PER_PAGE }),
-    getOrSetRuntimeCache('event-tags:list', TAXONOMY_TTL_MS, async () => {
-        const response = await fetch(`${REST_PATH}event-tags?per_page=100`);
-        return response.ok ? await response.json() : [];
-    }),
-]);
-const tags = tagsRes;
+const events = await getAllUpcomingEvents();
+const hasUpcomingEvents = events.length > 0;
 ---
 {hasUpcomingEvents && (
-    <>
-        <events-panel>
-            <div class="filter-container">
-                <div
-                    id="announce"
-                    class="sr-only"
-                    role="status"
-                    aria-live="polite"
-                    aria-atomic="true"
-                >
-                </div>
-                <form
-                    id="collective-event-filters-form"
-                    action={pagePath}
-                    aria-controls="events__listing"
-                    hx-get="/events/listing"
-                    hx-target=".events__listing"
-                    hx-trigger="submit"
-                    hx-swap="outerHTML swap:0.333s settle:0.333s"
-                >
-                    <input
-                        type="hidden"
-                        name="collective_association"
-                        value={collectiveTermId}
-                    />
-                    <section class="filters">
-                        <h2 class="ui-label">Filter events:</h2>
-                        <div class="filter-group">
-                            <SegmentedControl
-                                name="date-filter"
-                                label="Date filter"
-                                options={[
-                                    { value: '', label: 'All', checked: effectiveDateFilter === '' },
-                                    { value: 'upcoming', label: 'Upcoming', checked: effectiveDateFilter === 'upcoming' },
-                                    { value: 'past', label: 'Past', checked: effectiveDateFilter === 'past' },
-                                ]}
-                            />
-                        </div>
-                        {
-                            tags.length > 0 && (
-                                <div class="filter-group">
-                                    <label for="event_tag">Tag:</label>
-                                    <select id="event_tag" name="event_tag">
-                                        <option value="">All</option>
-                                        {tags.map((tag: any) => (
-                                            <option value={tag.id} selected={String(tag.id) === eventTag}>{tag.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )
-                        }
-                        <div class="filter-group">
-                            <SegmentedControl
-                                name="order"
-                                label="Order"
-                                options={[
-                                    { value: 'asc', label: 'Oldest first', checked: order === 'asc' },
-                                    { value: 'desc', label: 'Newest first', checked: order === 'desc' },
-                                ]}
-                            />
-                        </div>
-                        <button type="submit">Apply Filters</button>
-                    </section>
-                </form>
-            </div>
-            <div class="events_listing">
-                <EventListing events={events} />
-            </div>
-            <Pagination
-                id="pagination"
-                currentPage={page}
-                totalPages={totalPages}
-                hxGet="/events/listing"
-                hrefBase={hrefBase}
-                hxTarget="#events__listing"
-                hxInclude="#collective-event-filters-form"
-            />
-        </events-panel>
-        <script>
-            const htmx = (window as any).htmx;
-            if (!htmx) {
-                // Progressive enhancement fallback: form submit still works without htmx.
-            } else {
-                (htmx.config as any).disableHistoryCaching = true;
-
-                const panelEl = document.querySelector("events-panel");
-                if (!panelEl || panelEl.getAttribute("data-htmx-bound") === "true") {
-                    // Nothing to bind or already bound on this node.
-                } else {
-                    panelEl.setAttribute("data-htmx-bound", "true");
-                    htmx.process(panelEl);
-                    const announceEl = panelEl.querySelector("#announce");
-
-                    const handleBeforeRequest = (event: any) => {
-                        if (event?.detail?.target?.id !== "events__listing") return;
-                        event.detail.target.classList.add("is-transitioning-out");
-                        event.detail.target.setAttribute("aria-busy", "true");
-                        if (announceEl) {
-                            announceEl.textContent = "Loading events.";
-                            announceEl.classList.add("announcement_visible");
-                            announceEl.classList.remove("sr-only");
-                        }
-                    };
-
-                    const handleAfterSwap = (event: any) => {
-                        if (event?.detail?.target?.id !== "events__listing") return;
-                        const listingEl = event.detail.target;
-                        listingEl.classList.remove("is-transitioning-out");
-                        const count = listingEl.querySelectorAll("article").length;
-                        listingEl.setAttribute("aria-busy", "false");
-                        if (announceEl) {
-                            announceEl.textContent = `Loaded ${count} event${count === 1 ? "" : "s"}.`;
-                            announceEl.classList.remove("announcement_visible");
-                            announceEl.classList.add("sr-only");
-                        }
-                    };
-
-                    document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
-                    document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
-                }
-            }
-        </script>
-    </>
+    <events-panel>
+        <div class="events_listing">
+            <EventListing events={events} />
+        </div>
+    </events-panel>
 )}

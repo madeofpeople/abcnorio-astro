@@ -20,7 +20,7 @@ const linkForPage = (page: number) => `${linkBase}${linkSep}page=${page}`;
     id={id}
     class="pagination"
     aria-label="Pagination"
-    {...(oob ? { 'hx-swap-oob': 'outerHTML' } : {})}
+    hx-swap-oob={oob ? 'outerHTML' : undefined}
 >
     {totalPages > 1 && (
         <ul>
