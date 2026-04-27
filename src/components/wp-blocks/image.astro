@@ -1,5 +1,4 @@
 ---
-import { Image as AstroImage } from "astro:assets";
 import { CMS_URL } from "@util/paths.js";
 const { attributes } = Astro.props;
 const alt = attributes?.alt ?? "";
@@ -16,11 +15,6 @@ type Variant = {
   height?: number;
 };
 
-type ResolvedImageSource = {
-  url?: string;
-  canOptimizeWithAstro: boolean;
-};
-
 const cmsOrigin = (() => {
   try {
     return new URL(CMS_URL).origin;
@@ -29,12 +23,9 @@ const cmsOrigin = (() => {
   }
 })();
 
-function resolveWordPressImageUrl(value?: string): ResolvedImageSource {
+function resolveWordPressImageUrl(value?: string): string | undefined {
   if (!value || !cmsOrigin) {
-    return {
-      url: value,
-      canOptimizeWithAstro: Boolean(value),
-    };
+    return value;
   }
 
   try {
@@ -44,35 +35,22 @@ function resolveWordPressImageUrl(value?: string): ResolvedImageSource {
     const isWordPressLikeUploadsHost =
       url.hostname.includes("abcnorio.org") ||
       url.hostname.includes("itztlacoliuhqui.org");
-    const looksLikeImageFile = /\.(avif|gif|jpe?g|png|webp)$/i.test(url.pathname);
 
     if (!isWordPressLikeUploadsHost) {
-      return {
-        url: value,
-        canOptimizeWithAstro: true,
-      };
+      return value;
     }
 
     if (!isLegacyUploadsPath && !isCurrentUploadsPath) {
-      return {
-        url: value,
-        canOptimizeWithAstro: !looksLikeImageFile,
-      };
+      return value;
     }
 
     const canonicalPath = isLegacyUploadsPath
       ? url.pathname.replace("/wp-content/uploads/", "/app/uploads/")
       : url.pathname;
 
-    return {
-      url: `${cmsOrigin}${canonicalPath}`,
-      canOptimizeWithAstro: true,
-    };
+    return `${cmsOrigin}${canonicalPath}`;
   } catch {
-    return {
-      url: value,
-      canOptimizeWithAstro: Boolean(value),
-    };
+    return value;
   }
 }
 
@@ -93,7 +71,7 @@ for (const [name, value] of Object.entries(variantMap)) {
 
   variants.push({
     name,
-    sourceUrl: resolvedVariantSource.url || variant.source_url,
+    sourceUrl: resolvedVariantSource || variant.source_url,
     width: Number(variant.width),
     height: variant.height ? Number(variant.height) : undefined,
   });
@@ -109,7 +87,7 @@ const preferredVariant =
 const resolvedSource = resolveWordPressImageUrl(
   attributes?.url || attributes?.src || preferredVariant?.sourceUrl,
 );
-const src = resolvedSource.url;
+const src = resolvedSource;
 
 const width = Number(attributes?.width || preferredVariant?.width) || undefined;
 
@@ -125,43 +103,19 @@ const height = explicitHeight || (
 );
 
 const sizes = rawSizes || undefined;
-const widths = rawSrcset
-  ? rawSrcset
-      .split(",")
-      .map((candidate: string) =>
-        Number(candidate.trim().split(" ").at(-1)?.replace("w", "")),
-      )
-      .filter((value: number) => Number.isFinite(value) && value > 0)
-  : variants.map((variant) => variant.width);
 
 const altText = src
   ? alt
   : "No source URL was available from attributes.url, attributes.src, or attributes.sizes_data.";
 --- 
 
-{
-  !resolvedSource.canOptimizeWithAstro ? (
-    <img
-      src={src}
-      srcset={rawSrcset || undefined}
-      sizes={sizes}
-      alt={altText}
-      width={width}
-      height={height}
-      loading="eager"
-      decoding="async"
-    />
-  ) : (
-    <AstroImage
-      src={src}
-      widths={widths.length > 0 ? widths : undefined}
-      sizes={sizes}
-      alt={altText}
-      width={width}
-      height={height}
-      loading="eager"
-      inferSize={!width || !height}
-      decoding="async"
-    />
-  )
-}
+<img
+  src={src}
+  srcset={rawSrcset || undefined}
+  sizes={sizes}
+  alt={altText}
+  width={width}
+  height={height}
+  loading="eager"
+  decoding="async"
+/>
