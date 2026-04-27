@@ -1,32 +1,10 @@
 ---
-export const prerender = false;
-
 import SearchField from '@components/Search/SearchField.astro';
 import SearchResults from '@components/Search/SearchResults.astro';
 import Layout from '@layouts/index.astro';
-
-const q = Astro.url.searchParams.get('q')?.trim() ?? '';
-
-const host = Astro.request.headers.get('host') ?? '';
-const isDev = host.startsWith('dev.') || host.startsWith('localhost');
-const cmsBase = isDev ? import.meta.env.DEV_CMS : import.meta.env.STAGING_CMS;
-const searchPath = isDev ? import.meta.env.DEV_SEARCH_API : import.meta.env.STAGING_SEARCH_API;
-
-let results: Record<string, Array<{ url: string; title: string; event_start_date?: string }>> = {};
-
-if (q.length >= 2) {
-    try {
-        const res = await fetch(`${cmsBase}${searchPath}?q=${encodeURIComponent(q)}`);
-        if (res.ok) {
-            const data = await res.json();
-            results = data.results ?? {};
-        }
-    } catch {
-        // WP unreachable — render empty results
-    }
-}
 ---
 <Layout title="Search">
     <SearchField />
-    <SearchResults results={results} query={q} />
+    <noscript><p class="search__noscript">Search requires JavaScript to be enabled.</p></noscript>
+    <SearchResults />
 </Layout>
