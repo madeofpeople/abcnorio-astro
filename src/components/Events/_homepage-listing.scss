@@ -1,0 +1,31 @@
+@use "@tokens/breakpoints";
+
+.listing {
+  display: grid;
+  gap: 2rem;
+
+  grid-template-columns: repeat( 2, minmax(0, 1fr));
+
+  p { 
+    hyphens: auto;
+    white-space: wrap;
+  }
+
+  .teaser:first-of-type {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  @media (min-width: breakpoints.get-breakpoint(sm)) {
+    grid-template-columns: repeat( 3, minmax(0, 1fr));
+  }
+
+  @media (min-width: breakpoints.get-breakpoint(lg)) {
+    grid-template-columns: repeat( 4, minmax(0, 1fr));
+  }
+
+  @media (min-width: breakpoints.get-breakpoint(xl)) {
+    grid-template-columns: repeat( 5, minmax(0, 1fr));
+  }
+
+}

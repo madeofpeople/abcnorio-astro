@@ -9,13 +9,21 @@
         color: var(--color-nav-link);
         font-size: 1.5rem;
         cursor: pointer;
-        border-radius: 0;
-        background-color: var(--color-menu-toggle-bg, #0f0);
+        border-radius: 50%;
+        border: 0.25rem solid var(--color-text);
+        background-color: transparent;
 
+        svg {
+            position: relative;
+            top: -0.25rem;
+            // max-width: 120%;
+            // vertical-align: middle;
+            text-align: center;
+        }
         .line {
             transform-box: fill-box;
             transform-origin: center;
-            transition: transform 220ms ease, opacity 180ms linear;
+            transition: transform 220ms ease, opacity 180ms linear, color 180ms linear;
         }
 
         &[aria-expanded="true"] .top {
@@ -28,6 +36,15 @@
 
         &[aria-expanded="true"] .bottom {
             transform: translateY(-20px) rotate(-45deg);
+        }
+
+        &.active {
+            background-color: --var(--color-page-bg);
+            svg {
+                .line { 
+                    fill: --var(--color-page-bg);
+                }
+            }
         }
     }
 }

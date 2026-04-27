@@ -1,9 +1,9 @@
-  @use "@tokens/breakpoints";
+@use "@tokens/breakpoints";
 
 $teaser-out-duration: 0.333s;
 $teaser-in-duration: 0.333s;
 $stagger-count: 24;
-$stagger-step: 45ms;
+$stagger-step: 25ms;
 
 .listing {
   display: grid;
@@ -27,6 +27,11 @@ $stagger-step: 45ms;
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
+  @media (min-width: breakpoints.get-breakpoint(xl)) {
+    border: 1rem #000 solid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   p {
     hyphens: auto;
     white-space: wrap;
@@ -38,67 +43,61 @@ $stagger-step: 45ms;
     transform: translate3d(0, 0, 0);
     transition-property: transform;
     transition-duration: $teaser-out-duration;
-    transition-timing-function: ease-in-out;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-delay: 0ms;
-
-    &::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 100%;
-      background: var(--color-page-bg);
-      transform: scaleY(0);
-      transform-origin: bottom;
-      pointer-events: none;
-      transition-property: transform;
-      transition-duration: $teaser-out-duration;
-      transition-timing-function: ease-in-out;
-      transition-delay: 0ms;
-    }
   }
 }
 
 .events__listing .teaser {
-  transition-property: transform;
+  transition-property: transform, opacity, filter;
 }
 
+// Apply per-card delay during both exit and enter phases so the listing
+// cascades instead of moving as one block.
+.events__listing.is-transitioning-out .teaser,
 .events__listing.htmx-swapping .teaser,
 .events__listing .teaser.htmx-added {
   @for $i from 1 through $stagger-count {
     &:nth-child(#{$i}) {
       transition-delay: ($i - 1) * $stagger-step;
-
-      &::after {
-        transition-delay: ($i - 1) * $stagger-step;
-      }
     }
   }
 }
 
+// Phase 1 (outgoing start): beforeRequest adds .is-transitioning-out.
+// Keep cards visibly in motion so the listing does not sit fully blank
+// while the request is in flight.
+.events__listing.is-transitioning-out {
+  .teaser {
+    opacity: 0;
+    transform: translate3d(-50vw, 0, 0);
+  }
+}
+
+// Phase 1b (outgoing handoff): htmx then adds .htmx-swapping just before
+// replacement, taking cards to the full exit state.
 .events__listing.htmx-swapping {
   .teaser {
-    transform: translate3d(0 , -100vw, 0);
-
-    &::after {
-      transform: scaleY(1);
-    }
+    opacity: 0;
+    transform: translate3d(-50vw, 0, 1);
   }
 }
 
+// Phase 2 (incoming start): new cards are inserted with .htmx-added.
+// Keep them hidden/off-position until settle begins.
 .events__listing .teaser.htmx-added {
   transition-duration: $teaser-in-duration;
-  transform: translate3d(0, -100vw, 0);
-
-  &::after {
-    transition-duration: $teaser-in-duration;
-    transform: scaleY(1);
-  }
+  transform: translate3d(50vw, 0, 1);
+  filter: blur(0.35rem);
+  opacity: 0;
 }
 
+// Phase 3 (incoming end): while container is .htmx-settling,
+// the same .htmx-added cards animate to final visible state.
 .events__listing.htmx-settling .teaser.htmx-added {
   transform: translate3d(0, 0, 0);
+  filter: blur(0);
+  opacity: 1;
 
   &::after {
     transform: scaleY(0);

@@ -28,7 +28,7 @@ export async function getStaticPaths() {
 }
 ---
 <Layout>
-  <article>
+  <main>
     <h1 set:html={post.title?.rendered || ''}></h1>
-  </article>
+  </main>
 </Layout>

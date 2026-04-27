@@ -3,6 +3,8 @@ import { Debug } from "astro:components";
 import { REST_PATH } from "@util/paths.js";
 import { fetchJsonWithBuildCache } from '@util/build-cache.js';
 
+import "./_homepage-listing.scss";
+
 interface Props {
   slug: string;
   teaserComponent?: any;
@@ -24,32 +26,21 @@ const readRequiredProp = (item: any, prop: string) => {
 
   return item?.[prop] ?? item?.meta?.[prop] ?? item?.acf?.[prop];
 };
-const items = Array.isArray(results)
+let items = Array.isArray(results)
   ? results.filter((result: any) => (
       !requiredProps.length || requiredProps.every((prop) => hasValue(readRequiredProp(result, prop)))
     ))
   : [];
 
+items = items.slice(0, 7);
+
 const Tag = teaserComponent ?? Debug;
 
 ---
-<style>
-
-  .listing {
-    display: grid;
-    gap: 2rem;
-    grid-template-columns: repeat( 2, minmax(0, 1fr));
-    @media (min-width: 900px ) {
-      grid-template-columns: repeat( 3, minmax(0, 1fr));
-    }
-    p { 
-      hyphens: auto;
-      white-space: wrap;
-    }
-  }
-</style>
 <section class="listing">
     {items.map((result: any) => (
       <Tag data={result} />
     ))}
 </section>
+<a href="/events" class="view-all-link">View all events</a>
+

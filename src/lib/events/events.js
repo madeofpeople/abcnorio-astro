@@ -1,10 +1,20 @@
 import { REST_PATH } from "@util/paths.js";
 import { POSTS_PER_PAGE } from "@consts";
 
+// Map UI param names to WP REST API taxonomy rest_base param names.
+const TAXONOMY_PARAM_MAP = {
+    collective_association: 'collective-associations',
+    event_type:             'event-types',
+    event_tag:              'event-tags',
+};
+
 export async function getEvents(filters = {}, { page = 1, perPage = POSTS_PER_PAGE } = {}) {
+    const mapped = Object.fromEntries(
+        Object.entries(filters).map(([k, v]) => [TAXONOMY_PARAM_MAP[k] ?? k, v])
+    );
     const params = new URLSearchParams(
         Object.fromEntries(
-            Object.entries({ ...filters, page, per_page: perPage, _embed: 'wp:featuredmedia' })
+            Object.entries({ ...mapped, page, per_page: perPage, _embed: 'wp:featuredmedia' })
                 .filter(([, v]) => v !== '' && v != null)
         )
     );
