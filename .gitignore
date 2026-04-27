@@ -4,3 +4,4 @@ build-archives
 .cache
 .astro
 .env
+*.env
