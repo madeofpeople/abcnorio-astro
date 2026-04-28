@@ -13,7 +13,7 @@ const isLiveDevMode = mode === "development" || mode === "staging";
 const propsPost = (Astro.props as any)?.post;
 let post = propsPost;
 
-if (isLiveDevMode && slug && !propsPost) {
+if (isLiveDevMode && slug) {
   const livePosts = await fetchJsonWithBuildCache(
     `${REST_PATH}events?slug=${encodeURIComponent(slug)}&_embed=wp:featuredmedia`,
     { defaultValue: [], cacheTtlMs: 0 },

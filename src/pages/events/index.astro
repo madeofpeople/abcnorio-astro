@@ -1,5 +1,6 @@
 ---
-export const prerender = ['full', 'events'].includes(process.env.SCOPE || 'full');
+const _mode = String(process.env.MODE || '').toLowerCase();
+export const prerender = (_mode === 'development' || _mode === 'staging') ? false : ['full', 'events'].includes(process.env.SCOPE || 'full');
 
 import Layout from "@layouts/index.astro";
 import EventsPanel from "@components/Events/EventsPanel.astro";

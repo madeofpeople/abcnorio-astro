@@ -191,11 +191,11 @@ export async function fetchJsonWithBuildCache(url, options = {}) {
     return data;
   } catch (error) {
     if (cachedSnapshot !== null) {
-      console.warn(`[build-cache] Using cached response for ${snapshotKey}`);
+      console.warn(`[build-cache] Fetch failed for ${url}: ${error.message}. Using stale cache for ${snapshotKey}`);
       return cachedSnapshot.data;
     }
 
-    console.warn(`[build-cache] No cache for ${snapshotKey}; using default value`);
+    console.error(`[build-cache] Fetch failed for ${url}: ${error.message}. No cache for ${snapshotKey}; using default value`);
     return defaultValue;
   }
 }
