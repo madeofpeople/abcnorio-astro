@@ -104,6 +104,11 @@ export default defineConfig({
         },
       },
     },
+    ...(mode !== 'production' && {
+      server: {
+        watch: { usePolling: true },
+      },
+    }),
     optimizeDeps: {
       include: ['ics', 'file-saver'],
     },
@@ -124,7 +129,7 @@ export default defineConfig({
 
   server: {
     port: 3033,
-    allowedHosts: ['dev.itztlacoliuhqui.org', 'staging.itztlacoliuhqui.org', 'abcnorio.itztlacoliuhqui.org', 'localhost'],
+    allowedHosts: ['dev.itztlacoliuhqui.org', 'staging.itztlacoliuhqui.org', 'abcnorio.itztlacoliuhqui.org', 'preview.itztlacoliuhqui.org', 'localhost'],
   },
 
   outDir,

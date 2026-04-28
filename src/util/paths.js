@@ -17,7 +17,7 @@ switch (mode) {
 console.log('CMS URL:', cmsURL);
 export const REST_PATH = `${cmsURL}${env.REST_ENDPOINT}`;
 export const BLOCKS_PATH = `${cmsURL}${env.BLOCKS_ENDPOINT}`;
-export const SITE_URL = env.SITE_URL;
+export const SITE_URL = (env.SITE_URL || env.SITE || '').replace(/\/$/, '');
 export const CMS_URL = cmsURL;
 export const MENU_API = `${cmsURL}${env.MENU_ENDPOINT}`;
 export const SEARCH_API = `${cmsURL}${searchAPI}`;

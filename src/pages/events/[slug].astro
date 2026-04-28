@@ -5,10 +5,25 @@ import ATC from "../../components/AddToCalendar/AddToCalendar.astro";
 import { SITE_URL, REST_PATH } from "@util/paths.js";
 import { fetchPostBlocksCachedByPostModified } from "@util/blocks.js";
 import { buildPostSeo } from "@util/seo.js";
-import { fetchAllWpItemsWithBuildCache } from "@util/build-cache.js";
+import { fetchAllWpItemsWithBuildCache, fetchJsonWithBuildCache } from "@util/build-cache.js";
 
 const { slug } = Astro.params;
-const { post } = Astro.props as any;
+const mode = String(process.env.MODE || "").toLowerCase();
+const isLiveDevMode = mode === "development" || mode === "staging";
+const propsPost = (Astro.props as any)?.post;
+let post = propsPost;
+
+if (isLiveDevMode && slug && !propsPost) {
+  const livePosts = await fetchJsonWithBuildCache(
+    `${REST_PATH}events?slug=${encodeURIComponent(slug)}&_embed=wp:featuredmedia`,
+    { defaultValue: [], cacheTtlMs: 0 },
+  );
+
+  if (Array.isArray(livePosts) && livePosts[0]) {
+    post = livePosts[0];
+  }
+}
+
 const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
 const seo = buildPostSeo({
   post,

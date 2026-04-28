@@ -5,7 +5,20 @@ import path from 'node:path';
 /** Root folder for persistent build-time WP API cache snapshots. */
 const CACHE_ROOT = path.join(process.cwd(), '.cache', 'wp-api');
 /** Default freshness window for cache entries (15 minutes). */
-const DEFAULT_CACHE_TTL_MS = 15 * 60 * 1000;
+const DEFAULT_CACHE_TTL_MS = (() => {
+  const mode = String(process.env.MODE || '').toLowerCase();
+  const raw = Number(process.env.BUILD_CACHE_TTL_MS);
+  if (Number.isFinite(raw) && raw >= 0) {
+    return raw;
+  }
+
+  // Dev/staging frontends should reflect CMS changes immediately unless explicitly overridden.
+  if (mode === 'development' || mode === 'staging') {
+    return 0;
+  }
+
+  return 15 * 60 * 1000;
+})();
 /** Number of paginated requests executed concurrently per fetch batch. */
 const DEFAULT_PAGE_BATCH_SIZE = 5;
 

@@ -56,78 +56,84 @@ const [eventTypes, collectives] = await Promise.all([
         hx-swap="outerHTML swap:0.333s settle:0.333s"
     >
         <section class="filters">
-            <h2 class="ui-label">Filter by:</h2>
-            <div class="filter-group">
-                <SegmentedControl
-                    name="date-filter"
-                    label="Date filter"
-                    options={[
-                        { value: '', label: 'All', checked: dateFilter === '' },
-                        { value: 'upcoming', label: 'Upcoming', checked: dateFilter === 'upcoming' },
-                        { value: 'past', label: 'Past', checked: dateFilter === 'past' },
-                    ]}
-                />
-            </div>
 
-            <div class="filter-group">
-                <label for="event_type">Type:</label>
-                <select id="event_type" name="event_type">
-                    <option value="">All</option>
-                    {eventTypes.map((et: any) => (
-                            <option value={et.id} selected={String(et.id) === eventType}>
-                                {et.name}
-                            </option>
-                        ))
-                    }
-                </select>
-            </div>
+            <h2 class="ui-label">Event Filters</h2>
+            
+            <div>
 
-            {collectives.length > 0 && (
                 <div class="filter-group">
-                    <label for="collective_association">Collective:</label>
-                    <select id="collective_association" name="collective_association">
+                    <SegmentedControl
+                        name="date-filter"
+                        label="Date filter"
+                        options={[
+                            { value: '', label: 'All', checked: dateFilter === '' },
+                            { value: 'upcoming', label: 'Upcoming', checked: dateFilter === 'upcoming' },
+                            { value: 'past', label: 'Past', checked: dateFilter === 'past' },
+                        ]}
+                    />
+                </div>
+
+                <div class="filter-group">
+                    <label for="event_type">Type:</label>
+                    <select id="event_type" name="event_type">
                         <option value="">All</option>
-                        {collectives.map((c: any) => (
-                            <option value={c.id} selected={String(c.id) === collectiveAssociation}>
-                                {c.title?.rendered ?? c.slug}
-                            </option>
-                        ))}
+                        {eventTypes.map((et: any) => (
+                                <option value={et.id} selected={String(et.id) === eventType}>
+                                    {et.name}
+                                </option>
+                            ))
+                        }
                     </select>
                 </div>
-            )}
 
-            <div class="filter-group">
-                <label for="event_start_before">Date Before:</label>
-                <input
-                    type="date"
-                    id="event_start_before"
-                    name="event_start_before"
-                    value={eventStartBefore}
-                />
-            </div>
+                {collectives.length > 0 && (
+                    <div class="filter-group">
+                        <label for="collective_association">Collective:</label>
+                        <select id="collective_association" name="collective_association">
+                            <option value="">All</option>
+                            {collectives.map((c: any) => (
+                                <option value={c.id} selected={String(c.id) === collectiveAssociation}>
+                                    {c.title?.rendered ?? c.slug}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
 
-            <div class="filter-group">
-                <label for="event_start_after">Date After:</label>
-                <input
-                    type="date"
-                    id="event_start_after"
-                    name="event_start_after"
-                    value={eventStartAfter}
-                />
-            </div>
+                <div class="filter-group">
+                    <label for="event_start_before">Date Before:</label>
+                    <input
+                        type="date"
+                        id="event_start_before"
+                        name="event_start_before"
+                        value={eventStartBefore}
+                    />
+                </div>
 
-            <div class="filter-group">
-                <SegmentedControl
-                    name="order"
-                    label="Order"
-                    options={[
-                        { value: 'asc', label: 'Oldest first', checked: order === 'asc' },
-                        { value: 'desc', label: 'Newest first', checked: order === 'desc' },
-                    ]}
-                />
+                <div class="filter-group">
+                    <label for="event_start_after">Date After:</label>
+                    <input
+                        type="date"
+                        id="event_start_after"
+                        name="event_start_after"
+                        value={eventStartAfter}
+                    />
+                </div>
+
+                <div class="filter-group">
+                    <SegmentedControl
+                        name="order"
+                        label="Order"
+                        options={[
+                            { value: 'asc', label: 'Oldest first', checked: order === 'asc' },
+                            { value: 'desc', label: 'Newest first', checked: order === 'desc' },
+                        ]}
+                    />
+                </div>
+                <button id="apply-event-filters" type="submit">
+                    Apply Filters
+                </button>
             </div>
-            <button id="apply-event-filters" type="submit">Apply Filters</button
-            >
         </section>
     </form>
     <div
