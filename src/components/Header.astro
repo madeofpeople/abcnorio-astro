@@ -1,6 +1,6 @@
 ---
 import Menu from '@components/Menu/Menu.astro';
-import { fetchMenu } from '@util/navigation.js';
+import { fetchMenu } from '@lib/navigation.js';
 
 /** @type {Array<{ title: string, url: string, target?: string }>} */
 const primaryMenu = await fetchMenu('primary_navigation');
