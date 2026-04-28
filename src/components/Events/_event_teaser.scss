@@ -7,17 +7,27 @@ $teaser_bg: #eee;
     background-color: #ffbaba;
     position: relative;
     aspect-ratio: 3 / 2;
-    
+
+    .content {
+        position: absolute;
+        top: 4rem;
+        left: 1rem;
+        max-width: 66.66666%;
+        @media screen and (min-width: breakpoints.get-breakpoint(sm) ) and (max-width: breakpoints.get-breakpoint(lg)) {
+            max-width: 100%;
+        }
+    }
 
     time {
         display: inline-block;
         box-sizing: border-box;
-        padding: 0.25rem 2rem 0.25rem 2rem;
+        padding: 0.25rem 2rem 0.25rem 0rem;
         max-width: fit-content;
-        color: var(color-text);
+        color: var(--color-text);
         background-color: $teaser_bg;
         font-family: "Geist Mono", monospace;
         margin-bottom: 1rem;
+        display: block;
     }
 
     h3 {
@@ -26,19 +36,8 @@ $teaser_bg: #eee;
         font-size: 16px;
         background-color: $teaser_bg;
         color: var(--color-text);
-        padding: 1rem 1rem 1rem 2rem;
+        padding: 1rem 1rem 1rem 0;
         font-weight: 400;
-    }
-
-
-    .content {
-        position: absolute;
-        top: 4rem;
-        max-width: 66.66666%;
-        @media screen and (min-width: breakpoints.get-breakpoint(sm) ) and (max-width: breakpoints.get-breakpoint(lg)) {
-            max-width: 100%;
-        }
-        left: 0;
     }
 
     a {
@@ -77,7 +76,6 @@ $teaser_bg: #eee;
 
             img {
                 opacity: 1;
-//                mix-blend-mode: overlay;
                 mix-blend-mode: luminosity;
             }
         }
