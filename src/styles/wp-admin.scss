@@ -26,6 +26,11 @@ body.wp-admin :where(h1, h2, h3, h4) {
 .block-editor-iframe__body {
   background-color: var(--color-page-bg);
   font-size: 1rem;
+  line-height: 1.4;
+
+  a {
+    color: var(--color-nav-link);
+  } 
 }
 
 .block-editor-rich-text__editable {
