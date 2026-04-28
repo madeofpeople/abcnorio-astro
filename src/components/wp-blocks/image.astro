@@ -107,15 +107,34 @@ const sizes = rawSizes || undefined;
 const altText = src
   ? alt
   : "No source URL was available from attributes.url, attributes.src, or attributes.sizes_data.";
---- 
 
-<img
-  src={src}
-  srcset={rawSrcset || undefined}
-  sizes={sizes}
-  alt={altText}
-  width={width}
-  height={height}
-  loading="eager"
-  decoding="async"
-/>
+const caption = attributes?.caption || '';
+---
+
+{src && caption && (
+  <figure>
+    <img
+      src={src}
+      srcset={rawSrcset || undefined}
+      sizes={sizes}
+      alt={altText}
+      width={width}
+      height={height}
+      loading="eager"
+      decoding="async"
+    />
+    <figcaption set:html={caption} />
+  </figure>
+)}
+{src && !caption && (
+  <img
+    src={src}
+    srcset={rawSrcset || undefined}
+    sizes={sizes}
+    alt={altText}
+    width={width}
+    height={height}
+    loading="eager"
+    decoding="async"
+  />
+)}

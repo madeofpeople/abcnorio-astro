@@ -8,6 +8,7 @@ import List from './list.astro';
 import ListItem from './list-item.astro';
 import Gallery from './gallery.astro';
 import YouTube from './youtube.astro';
+import Heading from './heading.astro';
 
 let { component, attributes, innerBlocks } = Astro.props;
 
@@ -17,6 +18,9 @@ let Component = Debug;
 switch (component) {
     case 'core/paragraph':
         Component = Paragraph;
+    break;
+    case 'core/heading':
+        Component = Heading;
     break;
     case 'core/image':
         Component = Image;

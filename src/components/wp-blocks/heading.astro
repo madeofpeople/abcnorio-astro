@@ -1,0 +1,11 @@
+---
+const { attributes } = Astro.props;
+const level = attributes?.level ?? 2;
+const content = attributes?.content ?? '';
+---
+{level === 1 && <h1 set:html={content} />}
+{level === 2 && <h2 set:html={content} />}
+{level === 3 && <h3 set:html={content} />}
+{level === 4 && <h4 set:html={content} />}
+{level === 5 && <h5 set:html={content} />}
+{level === 6 && <h6 set:html={content} />}
