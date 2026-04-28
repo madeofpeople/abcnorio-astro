@@ -1,6 +1,8 @@
 ---
+import fs from 'node:fs';
 import Head from '@components/Head.astro';
 import Header from '../components/Header.astro';
+import PushInProgressBanner from '../components/PushInProgressBanner.astro';
 
 const {
   title,
@@ -15,6 +17,9 @@ const {
 
 const routeNeedsHtmx = Astro.url.pathname.startsWith('/events') || Astro.url.pathname.startsWith('/search');
 const shouldLoadHtmx = loadHtmx ?? routeNeedsHtmx;
+
+const isStaging = process.env.MODE === 'staging';
+const pushInProgress = isStaging && fs.existsSync('/app/.push-in-progress');
 ---
 <html lang="en">
   <Head
@@ -28,6 +33,7 @@ const shouldLoadHtmx = loadHtmx ?? routeNeedsHtmx;
     loadHtmx={shouldLoadHtmx}
   />
   <body>
+    {pushInProgress && <PushInProgressBanner />}
     <Header />
     <main>
       <slot /> <!-- your content is injected here -->
