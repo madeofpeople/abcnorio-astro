@@ -1,6 +1,5 @@
 ---
-const _mode = String(process.env.MODE || '').toLowerCase();
-export const prerender = (_mode === 'development' || _mode === 'staging') ? false : (process.env.SCOPE || 'full') === 'full';
+export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : (process.env.SCOPE || 'full') === 'full';
 
 import Layout from '@layouts/index.astro';
 import Listing from '@components/Events/Homepage_Listing.astro';
@@ -26,7 +25,6 @@ import { SITE_URL, REST_PATH } from '@util/paths.js';
     <section>
       <Listing
         slug={'collectives'}
-        count={7}
         teaserComponent={CollectiveTeaser}
       />
     </section>
