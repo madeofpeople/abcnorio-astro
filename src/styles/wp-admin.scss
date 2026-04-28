@@ -22,3 +22,13 @@ body.wp-admin :where(a, a:visited) {
 body.wp-admin :where(h1, h2, h3, h4) {
   color: var(--color-text);
 }
+
+.block-editor-iframe__body {
+  background-color: var(--color-page-bg);
+  font-size: 1rem;
+}
+
+.block-editor-rich-text__editable {
+  color: var(--color-text);
+  margin-bottom: 1rem;
+}
