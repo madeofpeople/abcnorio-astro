@@ -1,6 +1,9 @@
 @charset "UTF-8";
 @use './tokens/colors';
 @use './tokens/typography';
+@use './tokens/breakpoints';
+
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&family=Special+Elite&display=swap');
 
 /* Admin parity subset from frontend tokens/typography without full frontend reset/layout rules. */
 body.wp-admin {
