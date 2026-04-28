@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
 const rootDir = fileURLToPath(new URL('.', import.meta.url));
-const wpAdminCssOutDir = process.env.WP_ADMIN_CSS_OUT_DIR?.trim() || '../../wp/dev/abcnorio-func/build';
+const wpAdminCssOutDir = process.env.WP_ADMIN_CSS_OUT_DIR?.trim() || '../../abcnorio-func/build';
 
 export default defineConfig({
   build: {
@@ -14,7 +14,7 @@ export default defineConfig({
       output: {
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith('.css')) {
-            return 'wp-admin.css';
+            return 'deploy-dashboard.css';
           }
           return 'assets/[name][extname]';
         },
