@@ -4,6 +4,7 @@ import { Debug } from 'astro:components';
 import Paragraph from './paragraph.astro';
 import Quote from './quote.astro';
 import Image from './image.astro';
+import Matterport from './matterport.astro';
 import List from './list.astro';
 import ListItem from './list-item.astro';
 import Gallery from './gallery.astro';
@@ -41,6 +42,9 @@ switch (component) {
         switch(attributes.providerNameSlug) {
             case "youtube":
                 Component = YouTube;
+            break;
+            case "matterport":
+                Component = Matterport;
             break;
         }
     break;
