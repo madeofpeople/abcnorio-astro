@@ -2,14 +2,14 @@
 // Check if we're on the dedicated search page (not a sidebar/nav search)
 const isSearchPage = Astro.url?.pathname?.startsWith('/search');
 ---
-<div class="search" role="search" aria-label="Site search">
+<div class="search-field" id="search-field" role="search" aria-label="Site search">
     <form id="search-form" action="/search" method="get"
           aria-controls={isSearchPage ? 'search-results' : undefined}
           data-search-api="/search/api"
           data-search-page-url="/search">
         <label class="sr-only" for="search-query">Search site</label>
-        <input id="search-query" type="search" name="q" placeholder="Search..." enterkeyhint="search" required>
-        <button type="submit">Search</button>
+        <input id="search-query" type="search" name="q" placeholder="Search..." enterkeyhint="search" autocomplete="off" required>
+        <button type="submit" aria-label="Search">Search</button>
     </form>
     {isSearchPage && (
         <div id="search-announce" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
