@@ -1,0 +1,88 @@
+@use "@tokens/colors";
+@use "@tokens/breakpoints";
+
+$teaser_bg: #eee;
+
+.events.teaser {
+    overflow: hidden;
+    background-color: #ffbaba;
+    position: relative;
+    aspect-ratio: 3 / 4;
+
+    .content {
+        position: absolute;
+        top: 2rem;
+        left: 1rem;
+        max-width: 66.66666%;
+        @media screen and (min-width: breakpoints.get-breakpoint(sm) ) and (max-width: breakpoints.get-breakpoint(lg)) {
+            top: 3rem;
+            max-width: 100%;
+        }
+    }
+
+    time {
+        display: block;
+        box-sizing: border-box;
+        padding: 0.25rem 2rem 0.25rem 0rem;
+        max-width: fit-content;
+        color: var(--color-text);
+        background-color: $teaser_bg;
+        font-family: "Geist Mono", monospace;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    h3 {
+        display: inline-block;
+        font-family: "Geist Mono", monospace;
+        font-size: 16px;
+        background-color: $teaser_bg;
+        color: var(--color-text);
+        padding: 1rem 1rem 1rem 0;
+        font-weight: 400;
+    }
+
+    a {
+        height: 100%;
+        display: block;
+        text-decoration: none;
+        overflow: hidden;
+        font-size: 1rem;
+        border: 1rem solid $teaser_bg;
+        transition-property: border, color, mix-blend-mode;
+        transition-duration: 0.25s;
+        transition-timing-function: linear;
+        color: inherit;
+
+        img {
+            object-fit: cover;
+            object-position: top;
+            opacity: 0.5;
+            display: block;
+            width: 100%;
+            height: 100%;
+            mix-blend-mode: multiply;
+        }
+
+        &:focus,
+        &:hover {
+            border: 1rem solid $teaser_bg;
+            border-color: var(--color-text);
+            color: #fc0;
+
+            time,
+            h3 {
+                background-color: var(--color-text);
+                color: $teaser_bg;
+            }
+
+            img {
+                opacity: 1;
+                mix-blend-mode: luminosity;
+            }
+        }
+    }
+    @media (min-width: breakpoints.get-breakpoint(md)) {
+        aspect-ratio: 3 / 4;
+    }
+}
