@@ -1,0 +1,21 @@
+---
+import { REST_PATH } from "@util/paths.js";
+import { fetchJsonWithBuildCache } from '@util/build-cache.js';
+import NewsTeaser from "@components/News/News-Teaser.astro";
+import "./_homepage-news-listing.scss";
+
+const results = await fetchJsonWithBuildCache(`${REST_PATH}news_items`, { defaultValue: [] });
+
+const hasValue = (value: any) => value !== undefined && value !== null && value !== '';
+let items = Array.isArray(results)
+    ? results.filter((item: any) => hasValue(item?.meta?.news_item_date ?? item?.acf?.news_item_date))
+    : [];
+
+items = items.slice(0, 7);
+---
+<section class="listing">
+    {items.map((result: any) => (
+        <NewsTeaser data={result} />
+    ))}
+</section>
+<a href="/news_items" class="view-all-link">View all news</a>

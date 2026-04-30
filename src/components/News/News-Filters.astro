@@ -1,0 +1,114 @@
+---
+import { REST_PATH } from "@util/paths.js";
+import { getOrSetRuntimeCache } from "@util/runtime-cache.js";
+import "./_news-filters.scss";
+import SegmentedControl from "@components/SegmentedControl.astro";
+
+const TAXONOMY_TTL_MS = 5 * 60 * 1000;
+
+interface Props {
+    collectiveAssociation?: string;
+    order?: string;
+}
+
+const {
+    collectiveAssociation = '',
+    order = 'desc',
+} = Astro.props;
+
+const collectives = await getOrSetRuntimeCache(
+    "collectives:list",
+    TAXONOMY_TTL_MS,
+    async () => {
+        const res = await fetch(`${REST_PATH}collectives?per_page=100`);
+        return res.ok ? await res.json() : [];
+    },
+);
+---
+<news-filters class="filter-container">
+    <form
+        id="news-filters-form"
+        method="get"
+        action="/news_items"
+        aria-controls="news__listing"
+        hx-get="/news_items/listing"
+        hx-target=".news__listing"
+        hx-trigger="submit"
+        hx-swap="outerHTML swap:0.333s settle:0.333s"
+    >
+        <section class="filters">
+            <h2 class="ui-label">News Filters</h2>
+            <div>
+                {collectives.length > 0 && (
+                    <div class="filter-group">
+                        <label for="collective_association">Collective:</label>
+                        <select id="collective_association" name="collective_association">
+                            <option value="">All</option>
+                            {collectives.map((c: any) => (
+                                <option value={c.id} selected={String(c.id) === collectiveAssociation}>
+                                    {c.title?.rendered ?? c.slug}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                <div class="filter-group">
+                    <SegmentedControl
+                        name="order"
+                        label="Order"
+                        options={[
+                            { value: 'asc', label: 'Oldest first', checked: order === 'asc' },
+                            { value: 'desc', label: 'Newest first', checked: order === 'desc' },
+                        ]}
+                    />
+                </div>
+                <button id="apply-news-filters" type="submit">Apply Filters</button>
+            </div>
+        </section>
+    </form>
+    <div
+        id="news-announce"
+        class="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+    ></div>
+</news-filters>
+<script>
+    const htmx = (window as any).htmx;
+    if (htmx) {
+        (htmx.config as any).disableHistoryCaching = true;
+        const filtersEl = document.querySelector("news-filters");
+        if (filtersEl && filtersEl.getAttribute("data-htmx-bound") !== "true") {
+            filtersEl.setAttribute("data-htmx-bound", "true");
+            const announceEl = filtersEl.querySelector("#news-announce");
+
+            const handleBeforeRequest = (event: any) => {
+                if (event?.detail?.target?.id !== "news__listing") return;
+                event.detail.target.classList.add("is-transitioning-out");
+                event.detail.target.setAttribute("aria-busy", "true");
+                if (announceEl) {
+                    announceEl.textContent = "Loading news.";
+                    announceEl.classList.add("announcement_visible");
+                    announceEl.classList.remove("sr-only");
+                }
+            };
+
+            const handleAfterSwap = (event: any) => {
+                if (event?.detail?.target?.id !== "news__listing") return;
+                const listingEl = event.detail.target;
+                listingEl.classList.remove("is-transitioning-out");
+                const count = listingEl.querySelectorAll("article").length;
+                listingEl.setAttribute("aria-busy", "false");
+                if (announceEl) {
+                    announceEl.textContent = `Loaded ${count} news item${count === 1 ? "" : "s"}.`;
+                    announceEl.classList.remove("announcement_visible");
+                    announceEl.classList.add("sr-only");
+                }
+            };
+
+            document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
+            document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+        }
+    }
+</script>

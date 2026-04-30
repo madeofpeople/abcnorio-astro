@@ -1,0 +1,21 @@
+---
+import NewsTeaser from "@components/News/News-Teaser.astro";
+import "./_news-listing.scss";
+
+interface Props {
+    news: any[];
+}
+
+const { news }: Props = Astro.props;
+---
+<section
+    id="news__listing"
+    class="news__listing listing"
+    role="region"
+    aria-label="News results"
+    aria-busy="false"
+>
+    {news.map((result) => (
+        <NewsTeaser data={result} />
+    ))}
+</section>

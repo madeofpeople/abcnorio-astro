@@ -1,0 +1,39 @@
+---
+import { getNewsItems } from '@lib/news/news.js';
+import NewsListing from "@components/News/News-Listing.astro";
+import NewsFilters from "@components/News/News-Filters.astro";
+import Pagination from '@components/Pagination/Pagination.astro';
+import { POSTS_PER_PAGE } from '@consts';
+
+const page = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
+const hrefParams = new URLSearchParams(Astro.url.searchParams);
+hrefParams.delete('page');
+const hrefBase = `/news_items${hrefParams.toString() ? `?${hrefParams.toString()}` : ''}`;
+
+const filters: Record<string, string> = {};
+
+const collectiveVal = Astro.url.searchParams.get('collective_association');
+if (collectiveVal) filters['collective_association'] = collectiveVal;
+
+filters['order'] = Astro.url.searchParams.get('order') ?? 'desc';
+
+const { items, totalPages } = await getNewsItems(filters, { page, perPage: POSTS_PER_PAGE });
+---
+<news-panel>
+    <NewsFilters
+        collectiveAssociation={Astro.url.searchParams.get('collective_association') ?? ''}
+        order={Astro.url.searchParams.get('order') ?? 'desc'}
+    />
+    <div class="news_listing">
+        <NewsListing news={items} />
+    </div>
+    <Pagination
+        id="pagination"
+        currentPage={page}
+        totalPages={totalPages}
+        hxGet="/news_items/listing"
+        hrefBase={hrefBase}
+        hxTarget="#news__listing"
+        hxInclude="#news-filters-form"
+    />
+</news-panel>
