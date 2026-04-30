@@ -119,6 +119,7 @@ export default defineConfig({
         '@layouts': fileURLToPath(new URL('./src/layouts', import.meta.url)),
         '@pages': fileURLToPath(new URL('./src/pages', import.meta.url)),
         '@styles': fileURLToPath(new URL('./src/styles', import.meta.url)),
+        '@mixins': fileURLToPath(new URL('./src/styles/mixins', import.meta.url)),
         '@tokens': fileURLToPath(new URL('./src/styles/tokens', import.meta.url)),
         '@util': fileURLToPath(new URL('./src/util', import.meta.url)),
         '@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
