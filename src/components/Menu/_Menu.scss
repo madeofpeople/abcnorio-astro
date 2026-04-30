@@ -1,30 +1,9 @@
-@use '../../styles/tokens/breakpoints';
 @use './menu-toggle';
+@use '@tokens/breakpoints';
 @use '@tokens/colors';
+@use '@mixins/visibility';
 
-@mixin submenu-reveal($expanded: false) {
-    transition-property: max-height, opacity, transform, visibility;
-    transition-duration: 0.25s, 0.2s, 0.2s, 0s;
-    transition-timing-function: ease-out, ease-out, ease-out, linear;
 
-    @if $expanded {
-        max-height: 40rem;
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-        pointer-events: auto;
-        transition-delay: 0s, 0s, 0s, 0s;
-    }
-
-    @else {
-        max-height: 0;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-0.25rem);
-        pointer-events: none;
-        transition-delay: 0s, 0s, 0s, 0.25s;
-    }
-}
 
 nav-menu {
     position: relative;
@@ -145,16 +124,16 @@ nav-menu {
                 }
             }
 
-            &[aria-expanded="true"]>.subnav__toggle svg {
+            >.subnav__toggle[aria-expanded="true"] svg {
                 transform: rotate3d(1, 0, 0, 180deg);
             }
 
-            >ul {
-                @include submenu-reveal(false);
+            >.subnav__toggle + ul {
+                display: none;
             }
 
-            >ul[aria-expanded="true"] {
-                @include submenu-reveal(true);
+            >.subnav__toggle[aria-expanded="true"] + ul {
+                display: block;
             }
         }
 
@@ -170,8 +149,8 @@ nav-menu {
     @media (min-width: breakpoints.get-breakpoint(sm)) {
         position: static;
 
-        .toggle {
-            display: none;
+        .nav_toggle {
+            @include visibility.sronly();
         }
 
         nav {
@@ -200,15 +179,13 @@ nav-menu {
                         font-size: 1.5rem;
                     }
 
-                    >ul,
-                    &[aria-expanded="true"]>ul {
-                        @include submenu-reveal(false);
+                    >.subnav__toggle + ul {
+                        display: none;
                         width: max-content;
                         min-width: 300px;
                         position: absolute;
                         top: 100%;
                         left: 0;
-                        display: block;
                         z-index: 10;
                         li {
                             display: block;
@@ -216,10 +193,18 @@ nav-menu {
                         }
                     }
 
-                    &:focus>ul,
-                    &:hover>ul,
-                    &:focus-within>ul {
-                        @include submenu-reveal(true);
+                    &:hover>.subnav__toggle + ul,
+                    &:focus-within>.subnav__toggle + ul,
+                    >.subnav__toggle[aria-expanded="true"] + ul {
+                        display: block;
+                        opacity: 1;
+                        transform: translateY(0);
+                        transition: opacity 0.2s ease, transform 0.2s ease;
+
+                        @starting-style {
+                            opacity: 0;
+                            transform: translateY(-0.25rem);
+                        }
                     }
                 }
                 
@@ -235,3 +220,60 @@ nav-menu {
         }
     }
 }
+
+nav .search_toggle {
+
+    @include visibility.sronly();
+    
+    position: absolute;
+    right: 3rem;
+    top: 3rem;
+    width: 2rem;
+    height: 2rem;
+    svg {
+        width: 100%;
+        height: 100%;
+        path {
+            fill: var(--page-bg);
+        }
+    }
+    @media (min-width: breakpoints.get-breakpoint(md)) {
+        display: block;
+    }
+}
+nav > .search-field {
+
+    box-sizing: border-box;
+    display: flex;
+    margin-bottom: 1rem;
+    white-space: nowrap;
+    min-width: fit-content;
+
+
+    #search-query {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5rem;
+        font-size: 1rem;
+        border: none;
+        background-color: var(--color-page-bg);
+        color: var(--color-text);
+    }
+
+    @media (min-width: breakpoints.get-breakpoint(md)) {
+        position: fixed;
+        top: -12rem;
+        padding: 2rem;
+        background-color: rgba( colors.$c_text, 0.95);
+        transition-property: top;
+        transition-duration: 0.25s;
+        transition-timing-function: ease-out;
+        #search-query {
+            width: auto;
+        }
+        &[aria-expanded="true"] {
+            top: 0;
+        }
+    }
+}
+

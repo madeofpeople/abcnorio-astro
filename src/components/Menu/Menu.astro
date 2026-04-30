@@ -1,6 +1,6 @@
 ---
-import './_Menu.scss';
-import SearchField from '@components/Search/SearchField.astro';
+import "./_Menu.scss";
+import SearchField from "@components/Search/SearchField.astro";
 
 type MenuItem = {
     id: number;
@@ -14,7 +14,8 @@ const { menuData = [] } = Astro.props as { menuData?: MenuItem[] };
 const itemsById = new Map<number, MenuItem>();
 const hierarchicalMenu: MenuItem[] = [];
 
-const linkRel = (target?: string) => (target === '_blank' ? 'noopener noreferrer' : undefined);
+const linkRel = (target?: string) =>
+    target === "_blank" ? "noopener noreferrer" : undefined;
 
 for (const item of menuData) {
     itemsById.set(item.id, { ...item, children: [] });
@@ -35,13 +36,14 @@ for (const item of itemsById.values()) {
 ---
 
 <nav-menu>
-
-
     <nav aria-expanded="false" aria-label="Primary">
-
-        { Astro.url && Astro.url.pathname === '/search' ? null : <SearchField dest="search"/> }
+        {
+            Astro.url && Astro.url.pathname === "/search" ? null : (
+                <SearchField dest="search" />
+            )
+        }
         <button
-            class="toggle"
+            class="nav_toggle"
             type="button"
             aria-label="Toggle primary navigation"
             aria-controls="primary-navigation"
@@ -84,13 +86,43 @@ for (const item of itemsById.values()) {
                 </rect>
             </svg>
         </button>
+
+        <button
+            class="search_toggle"
+            type="button"
+            aria-label="Toggle search field"
+            aria-controls="search-field"
+            aria-expanded="false"
+        >
+            <svg
+                width="59"
+                height="59"
+                viewBox="0 0 59 59"
+                fill="none"
+                aria-hidden="true"
+                focusable="false"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                    d="M44.3333 44.3333L54.1667 54.1667M49.25 27.125C49.25 14.9056 39.3444 5 27.125 5C14.9056 5 5 14.9056 5 27.125C5 39.3444 14.9056 49.25 27.125 49.25C39.3444 49.25 49.25 39.3444 49.25 27.125Z"
+                    stroke="var(--nav-link-color)"
+                    stroke-width="8.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+            </svg>
+        </button>
+
         <ul id="primary-navigation">
             {
-                hierarchicalMenu.map((item) => (
-                    <li class={item.title.toLocaleLowerCase()} aria-expanded="false">
-                        <a href={item.url} target={item.target || undefined} rel={linkRel(item.target)}>
-                            {item.title}
-                        </a>
+                hierarchicalMenu.filter(item => item.title).map((item) => (
+                    <li
+                        class={item.title.toLocaleLowerCase()}
+                    >
+                        <a
+                            href={item.url}
+                            target={item.target || undefined}
+                            rel={linkRel(item.target)}
+                        >{item.title}</a>
                         {item.children && item.children.length > 0 && (
                             <button
                                 class="subnav__toggle"
@@ -100,7 +132,11 @@ for (const item of itemsById.values()) {
                                 aria-expanded="false"
                                 aria-label={`Toggle ${item.title} submenu`}
                             >
-                                <svg fill="#fff" viewBox="0 0 30.727 30.727" aria-hidden="true" focusable="false">
+                                <svg
+                                    viewBox="0 0 30.727 30.727"
+                                    aria-hidden="true"
+                                    focusable="false"
+                                >
                                     <path d="M29.994,10.183L15.363,24.812L0.733,10.184c-0.977-0.978-0.977-2.561,0-3.536c0.977-0.977,2.559-0.976,3.536,0l11.095,11.093L26.461,6.647c0.977-0.976,2.559-0.976,3.535,0C30.971,7.624,30.971,9.206,29.994,10.183z" />
                                 </svg>
                             </button>
@@ -110,17 +146,14 @@ for (const item of itemsById.values()) {
                             <ul
                                 id={`submenu-${item.id}`}
                                 aria-label={`${item.title} submenu`}
-                                aria-expanded="false"
                             >
-                                {item.children.map((child) => (
+                                {item.children.filter(child => child.title?.trim()).map((child) => (
                                     <li>
                                         <a
                                             href={child.url}
                                             target={child.target || undefined}
                                             rel={linkRel(child.target)}
-                                        >
-                                            {child.title}
-                                        </a>
+                                        >{child.title}</a>
                                     </li>
                                 ))}
                             </ul>
@@ -133,15 +166,29 @@ for (const item of itemsById.values()) {
 </nav-menu>
 
 <script>
-    import { bp } from '@util/breakpoints.js';
+    import { bp } from "@util/breakpoints.js";
 
     class Menu extends HTMLElement {
         constructor() {
             super();
-            const toggle = this.querySelector(".toggle");
+            const toggle = this.querySelector(".nav_toggle");
             const nav = this.querySelector("nav");
             const subnavToggles = this.querySelectorAll(".subnav__toggle");
-
+            const searchToggle = this.querySelector(".search_toggle");
+            searchToggle?.addEventListener("click", (e) => {
+                e.preventDefault();
+                const isExpanded =
+                    searchToggle.getAttribute("aria-expanded") === "true";
+                searchToggle.setAttribute("aria-expanded", String(!isExpanded));
+                console.log('toggled search, now', !isExpanded);
+                const searchField = this.querySelector("#search-field");
+                if (searchField instanceof HTMLElement) {
+                    searchField.setAttribute(
+                        "aria-expanded",
+                        String(!isExpanded),
+                    );
+                }
+            });
             if (toggle instanceof HTMLElement && nav instanceof HTMLElement) {
                 toggle.addEventListener("click", (e) => {
                     e.preventDefault();
@@ -154,25 +201,31 @@ for (const item of itemsById.values()) {
 
             subnavToggles.forEach((subToggle) => {
                 const parentLi = subToggle.parentElement;
-                const subMenu = parentLi?.querySelector("ul");
 
-                if (!(parentLi instanceof HTMLElement) || !(subMenu instanceof HTMLElement)) {
-                    return;
-                }
+                if (!(parentLi instanceof HTMLElement)) return;
+
+                parentLi.addEventListener("mouseenter", () => {
+                    if (document.documentElement.clientWidth <= bp("sm")) return;
+                    subToggle.setAttribute("aria-expanded", "true");
+                });
+
+                parentLi.addEventListener("mouseleave", () => {
+                    if (document.documentElement.clientWidth <= bp("sm")) return;
+                    subToggle.setAttribute("aria-expanded", "false");
+                });
 
                 subToggle.addEventListener("click", (e) => {
                     e.preventDefault();
-                    if (document.documentElement.clientWidth > bp('sm')) {
+                    if (document.documentElement.clientWidth > bp("sm")) {
                         // desktop — let hover handle it
                         return;
                     }
                     const isExpanded =
-                        subMenu.getAttribute("aria-expanded") === "true";
+                        subToggle.getAttribute("aria-expanded") === "true";
                     subToggle.setAttribute("aria-expanded", String(!isExpanded));
-                    parentLi.setAttribute("aria-expanded", String(!isExpanded));
-                    subMenu.setAttribute("aria-expanded", String(!isExpanded));
                 });
             });
         }
     }
     customElements.define("nav-menu", Menu);
+</script>

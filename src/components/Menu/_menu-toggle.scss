@@ -1,5 +1,5 @@
 @mixin styles {
-    .toggle {
+    .nav_toggle {
         position: fixed;
         top: 1.2rem;
         right: 1.25rem;
@@ -25,7 +25,7 @@
             transform-origin: center;
             transition: transform 220ms ease, opacity 180ms linear, color 180ms linear;
         }
-
+ 
         &[aria-expanded="true"] .top {
             transform: translateY(20px) rotate(45deg);
         }
@@ -36,12 +36,22 @@
 
         &[aria-expanded="true"] .bottom {
             transform: translateY(-20px) rotate(-45deg);
+            svg {
+                .line {
+                    fill: var(--color-page-bg);
+                }
+            }
         }
 
-        &.active {
-            background-color: --var(--color-page-bg);
+        &[aria-expanded="true"] {
+            color: var(--color-page-bg);
+            border-color: --var(--color-page-bg);
+            .top,
+            .bottom {
+                fill: var(--color-page-bg);
+            }
             svg {
-                .line { 
+                path { 
                     fill: --var(--color-page-bg);
                 }
             }
