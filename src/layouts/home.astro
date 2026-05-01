@@ -1,7 +1,10 @@
 ---
+import fs from 'node:fs';
 import Head from '@components/Head.astro';
 import Header from '../components/Header.astro';
-import { Debug } from 'astro:components';
+import Footer from '../components/Footer.astro';
+import PushInProgressBanner from '../components/PushInProgressBanner.astro';
+
 const {
   title,
   description,
@@ -10,8 +13,16 @@ const {
   ogImage,
   twitterSite,
   twitterCard,
+  loadHtmx,
 } = Astro.props;
+
+const routeNeedsHtmx = Astro.url.pathname.startsWith('/events') || Astro.url.pathname.startsWith('/search');
+const shouldLoadHtmx = loadHtmx ?? routeNeedsHtmx;
+
+const isStaging = process.env.MODE === 'staging';
+const pushInProgress = isStaging && fs.existsSync('/app/.push-in-progress');
 const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
+
 ---
 <html lang="en">
   <Head
@@ -22,15 +33,18 @@ const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
     ogImage={ogImage}
     twitterSite={twitterSite}
     twitterCard={twitterCard}
-    loadHtmx={true}
+    loadHtmx={shouldLoadHtmx}
   />
-  <body class={`collective ${slug}`}>
+  <body class={`${slug}`}>
+    {pushInProgress && <PushInProgressBanner />}
     <Header />
-    <main class="main">
+    <main>
+      <h1>Code test</h1>
       <article>
-         <slot /> <!-- your content is injected here -->
+        <slot /> <!-- your content is injected here -->
       </article>
     </main>
+    <Footer />
   </body>
   <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </html>

@@ -2,7 +2,7 @@ $c_text: #222;
 $c_page_bg: #fafafa;
 $c_link: #cd1c12;
 $c_accent-secondary: #009a0a;
-$c_subnav_link:  color-mix(in oklch, c_link, black 25%);
+$c_subnav_link:  color-mix(in oklch, $c_link, black 25%);
 $c_panel: #f2ecd5;
 
 :root {
@@ -19,5 +19,7 @@ $c_panel: #f2ecd5;
     --color-nav-bg: transparent;
     --color-nav-link-hover: #222;
     --color-subnav-link: #{$c_subnav_link};
+    --color-footer-bg: #{$c_text};
+    --color-footer-link: #{$c_link};
 
 }

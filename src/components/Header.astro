@@ -36,6 +36,7 @@ const primaryMenu = await fetchMenu('primary_navigation');
 </header>
 <style>
     header {
+        padding: 1rem 0;
         pre {
             font-size: 5px;
             @media (min-width: 900px) {
@@ -48,6 +49,9 @@ const primaryMenu = await fetchMenu('primary_navigation');
             &:hover {
                 color: #090;
             }
+        }
+        @media (min-width: 600px) {
+            padding: 1rem;
         }
     }
 </style>

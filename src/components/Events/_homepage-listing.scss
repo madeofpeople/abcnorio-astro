@@ -11,10 +11,6 @@
     white-space: wrap;
   }
 
-  .teaser:first-of-type {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
 
   @media (min-width: breakpoints.get-breakpoint(sm)) {
     grid-template-columns: repeat( 3, minmax(0, 1fr));
@@ -28,4 +24,11 @@
     grid-template-columns: repeat( 5, minmax(0, 1fr));
   }
 
+}
+
+@media (min-width: breakpoints.get-breakpoint(sm)) {
+  .home .event_listing .teaser:first-child {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
 }

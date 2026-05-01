@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import Head from '@components/Head.astro';
 import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 import PushInProgressBanner from '../components/PushInProgressBanner.astro';
 
 const {
@@ -20,6 +21,8 @@ const shouldLoadHtmx = loadHtmx ?? routeNeedsHtmx;
 
 const isStaging = process.env.MODE === 'staging';
 const pushInProgress = isStaging && fs.existsSync('/app/.push-in-progress');
+const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
+
 ---
 <html lang="en">
   <Head
@@ -32,11 +35,15 @@ const pushInProgress = isStaging && fs.existsSync('/app/.push-in-progress');
     twitterCard={twitterCard}
     loadHtmx={shouldLoadHtmx}
   />
-  <body>
+  <body class="event {slug}">
     {pushInProgress && <PushInProgressBanner />}
     <Header />
     <main>
-      <slot /> <!-- your content is injected here -->
+      <article>
+        <slot /> <!-- your content is injected here -->
+      </article>
     </main>
+    <Footer />
   </body>
+  <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </html>

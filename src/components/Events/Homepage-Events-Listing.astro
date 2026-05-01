@@ -37,10 +37,9 @@ items = items.slice(0, 7);
 const Tag = teaserComponent ?? Debug;
 
 ---
-<section class="listing">
+<section class="event_listing listing">
     {items.map((result: any) => (
       <Tag data={result} />
     ))}
 </section>
-<a href="/events" class="view-all-link">View all events</a>
 

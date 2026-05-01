@@ -12,6 +12,8 @@ const {
   twitterCard,
 } = Astro.props;
 
+const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
+
 ---
 <html lang="en">
   <Head
@@ -23,12 +25,15 @@ const {
     twitterSite={twitterSite}
     twitterCard={twitterCard}
   />
-  <body>
+  <body class={`event ${slug}`}>
     <Header />
     <main class="event-layout">
-      <slot name="event_header"/>
-      <slot name="main"/>
-      <slot name="sidebar" />
+      <article>
+        <slot name="event_header"/>
+        <slot name="main"/>
+        <slot name="sidebar" />
+      </article>
     </main>
   </body>
+  <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </html>

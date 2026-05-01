@@ -1,3 +1,25 @@
 ---
 export const prerender = ['full', 'programming'].includes(process.env.SCOPE || 'full');
+import Layout from '@layouts/page.astro';
+import Block from '@components/wp-blocks/generic-block.astro';
+import { SITE_URL, REST_PATH } from '@util/paths.js';
+import { fetchPostBlocksCachedByPostModified } from '@lib/blocks.js';
+import { buildPostSeo } from '@util/seo.js';
+import { fetchJsonWithBuildCache } from '@util/build-cache.js';
+
+const pages = await fetchJsonWithBuildCache(`${REST_PATH}pages?slug=programming`, { defaultValue: [] });
+const post = pages?.[0] ?? null;
+const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const seo = buildPostSeo({
+  post,
+  siteUrl: SITE_URL,
+  pathname: '/programming/',
+});
 ---
+
+<Layout {...seo}>
+  {post && <h1 set:html={post.title.rendered}></h1>}
+  {blocks.map((block: any) => <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks} />)}
+</Layout>
+
+

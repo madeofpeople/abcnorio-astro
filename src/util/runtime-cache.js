@@ -1,3 +1,4 @@
+const MAX_ENTRIES = 200;
 const runtimeCache = new Map();
 
 /**
@@ -20,6 +21,9 @@ export async function getOrSetRuntimeCache(key, ttlMs, loader) {
   const pending = (async () => {
     try {
       const value = await loader();
+      if (runtimeCache.size >= MAX_ENTRIES) {
+        runtimeCache.delete(runtimeCache.keys().next().value);
+      }
       runtimeCache.set(key, {
         value,
         expiresAt: Date.now() + ttlMs,

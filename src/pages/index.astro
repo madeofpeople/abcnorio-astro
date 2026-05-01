@@ -1,10 +1,11 @@
 ---
 export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : (process.env.SCOPE || 'full') === 'full';
 
-import Layout from '@layouts/index.astro';
-import Listing from '@components/Events/Homepage_Listing.astro';
-import EventTeaser from '@components/Events/event_teaser.astro';
+import Layout from '@layouts/home.astro';
+import Listing from '@components/Events/Homepage-Events-Listing.astro';
+import EventTeaser from '@components/Events/Events-Teaser.astro';
 import CollectiveTeaser from '@components/teasers/collective.astro';
+import NewsListing from '@components/News/Homepage-News-Listing.astro';
 import { SITE_URL, REST_PATH } from '@util/paths.js';
 ---
 <Layout
@@ -13,13 +14,14 @@ import { SITE_URL, REST_PATH } from '@util/paths.js';
   canonical={`${SITE_URL}/`}
 >
   <section>
-
+    <h1>WELCOME</h1>
     <section>
       <Listing
         slug={'events'}
         requiredProps={["event_start_date"]}
         teaserComponent={EventTeaser}
       />
+      <a href="/events" class="view-all-link">View all events</a>
     </section>
 
     <section>
@@ -27,6 +29,12 @@ import { SITE_URL, REST_PATH } from '@util/paths.js';
         slug={'collectives'}
         teaserComponent={CollectiveTeaser}
       />
+      <a href="/collectives" class="view-all-link">View collectives</a>
+
     </section>
 
+    <section>
+      <NewsListing />
+      <a href="/news" class="view-all-link">View all news</a>
+    </section>
 </Layout>

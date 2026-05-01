@@ -14,91 +14,103 @@ interface Props {
 const { name, options, label } = Astro.props;
 ---
 
-<segmented-control role="radiogroup" aria-label={label}>
-    {options.map((opt) => {
-        const id = `${name}-${opt.value || 'all'}`;
-        return (
-            <>
-                <input type="radio" id={id} name={name} value={opt.value} checked={opt.checked} />
-                <label for={id}>{opt.label}</label>
-            </>
-        );
-    })}
-    <span class="segmented-control__pill" aria-hidden="true"></span>
+<segmented-control>
+    <fieldset>
+        <legend class="sr-only">{label}</legend>
+        {options.map((opt) => {
+            const id = `${name}-${opt.value || 'all'}`;
+            return (
+                <>
+                    <input type="radio" id={id} name={name} value={opt.value} checked={opt.checked} />
+                    <label for={id}>{opt.label}</label>
+                </>
+            );
+        })}
+        <span class="segmented-control__pill" aria-hidden="true"></span>
+    </fieldset>
 </segmented-control>
 
 <style is:global lang="scss">
+    @use '@mixins/visibility';
     segmented-control {
-        position: relative;
         display: inline-flex;
-        background-color: #eee;
-        box-shadow: 0 0 3px inset rgba(0, 0, 0, 0.3);
-        border-radius: 2em;
         margin-top: 1.25rem;
-        input[type='radio'] {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            pointer-events: none;
-            padding: 0;
+
+        fieldset {
             border: none;
-        }
-
-        label {
-            display: inline-flex;
-            align-items: center;
-            margin-bottom: 0;
-            font-size: 0.875rem;
+            margin: 0;
+            padding: 0;
             position: relative;
-            z-index: 1;
-            padding: 0.25em 0.875em;
-            cursor: pointer;
-            user-select: none;
-            transition: color 0.15s ease;
-            line-height: 1.5;
-            white-space: nowrap;
-        }
-
-        // CSS-only fallback: checked label gets filled background
-        input[type='radio']:checked + label {
-            background: currentColor;
-            color: var(--color-page-bg);
+            display: inline-flex;
+            background-color: #eee;
+            box-shadow: 0 0 3px inset rgba(0, 0, 0, 0.3);
             border-radius: 2em;
-            white-space: nowrap;
-        }
 
-        // JS-enhanced: pill handles the visual, labels just change color
-        &.js-pill-active {
+            input[type='radio'] {
+                position: absolute;
+                opacity: 0;
+                width: 0;
+                height: 0;
+                pointer-events: none;
+                padding: 0;
+                border: none;
+            }
+
+            label {
+                display: inline-flex;
+                align-items: center;
+                margin-bottom: 0;
+                font-size: 0.875rem;
+                position: relative;
+                z-index: 1;
+                padding: 0.25em 0.875em;
+                cursor: pointer;
+                user-select: none;
+                transition: color 0.15s ease;
+                line-height: 1.5;
+                white-space: nowrap;
+            }
+
+            // CSS-only fallback: checked label gets filled background
             input[type='radio']:checked + label {
-                background: transparent;
+                background: currentColor;
                 color: var(--color-page-bg);
+                border-radius: 2em;
+                white-space: nowrap;
+            }
+
+            // JS-enhanced: pill handles the visual, labels just change color
+            &.js-pill-active {
+                input[type='radio']:checked + label {
+                    background: transparent;
+                    color: var(--color-page-bg);
+                }
+
+                .segmented-control__pill {
+                    display: block;
+                }
             }
 
             .segmented-control__pill {
-                display: block;
+                // @include visibility.sronly();
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                border-radius: 2em;
+                background: currentColor;
+                transition:
+                    transform 0.2s ease,
+                    width 0.2s ease;
+                pointer-events: none;
+                z-index: 0;
             }
-        }
 
-        .segmented-control__pill {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            border-radius: 2em;
-            background: currentColor;
-            transition:
-                transform 0.2s ease,
-                width 0.2s ease;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        input[type='radio']:focus-visible + label {
-            outline: 2px solid currentColor;
-            outline-offset: 2px;
-            border-radius: 2em;
+            input[type='radio']:focus-visible + label {
+                outline: 2px solid currentColor;
+                outline-offset: 2px;
+                border-radius: 2em;
+            }
         }
     }
 </style>
@@ -109,7 +121,8 @@ const { name, options, label } = Astro.props;
             const pill = this.querySelector(
                 ".segmented-control__pill",
             ) as HTMLElement | null;
-            if (!pill) return;
+            const fieldset = this.querySelector('fieldset') as HTMLElement | null;
+            if (!pill || !fieldset) return;
 
             const movePill = () => {
                 const checked = this.querySelector(
@@ -124,7 +137,7 @@ const { name, options, label } = Astro.props;
                 pill.style.transform = `translateX(${label.offsetLeft}px)`;
             };
 
-            this.classList.add("js-pill-active");
+            fieldset.classList.add("js-pill-active");
             this.querySelectorAll("input[type='radio']").forEach((input) => {
                 input.addEventListener("change", movePill);
             });
