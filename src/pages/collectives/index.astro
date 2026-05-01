@@ -1,7 +1,6 @@
 ---
 export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'collectives'].includes(process.env.SCOPE || 'full');
-
-import Layout from "@layouts/index.astro";
+import Layout from "@layouts/landing.astro";
 ---
 <Layout title="Collectives">
     <!-- loop through collectives, add little teasers here -->

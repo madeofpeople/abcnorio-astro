@@ -4,9 +4,10 @@ import EventListing from "@components/Events/Events-Listing.astro";
 
 interface Props {
     collectiveTermId: number;
+    limit?: number;
 }
 
-const { collectiveTermId } = Astro.props;
+const { collectiveTermId, limit = 3 } = Astro.props;
 
 const now = new Date().toISOString();
 
@@ -33,7 +34,8 @@ async function getAllUpcomingEvents(): Promise<any[]> {
     return allEvents;
 }
 
-const events = await getAllUpcomingEvents();
+const allEvents = await getAllUpcomingEvents();
+const events = allEvents.slice(0, limit);
 const hasUpcomingEvents = events.length > 0;
 ---
 {hasUpcomingEvents && (

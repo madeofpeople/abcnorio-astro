@@ -1,6 +1,7 @@
 ---
 import Head from '@components/Head.astro';
 import Header from '../components/Header.astro';
+const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
 
 const {
   title,
@@ -22,10 +23,13 @@ const {
     twitterSite={twitterSite}
     twitterCard={twitterCard}
   />
-  <body>
+  <body class={`landing ${slug}`}>
     <Header />
-    <article>
-      <slot /> <!-- your content is injected here -->
-    </article>
+    <main>
+      <article>
+        <slot /> <!-- your content is injected here -->
+      </article>
+    </main>
   </body>
+  <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </html>

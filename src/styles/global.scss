@@ -16,7 +16,7 @@ body {
     box-sizing: border-box;
     background-color: var(--color-page-bg);
     color: var(--color-text);
-    padding: 0rem 2rem 2rem 2rem;
+    padding: 0;
 }
 
 a,
@@ -58,6 +58,12 @@ main {
     display: grid;
     gap: 2rem;
     margin-top: 2rem;
+    & > article {
+        padding: 1rem;
+        @media (min-width: breakpoints.get-breakpoint(sm)) {
+            padding: 2rem;
+        }
+    }
 }
 
 #announce {

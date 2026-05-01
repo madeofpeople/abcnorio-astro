@@ -14,7 +14,7 @@ const currentPathname = hxCurrentUrl ? new URL(hxCurrentUrl).pathname : '/events
 Astro.response.headers.set('HX-Push-Url', `${currentPathname}?${pushUrl.searchParams.toString()}`);
 
 import { getEvents } from '../../lib/events/events.js';
-import EventListing from '@components/Events/EventListing.astro';
+import EventListing from '@components/Events/Events-Listing.astro';
 import Pagination from '@components/Pagination/Pagination.astro';
 import { POSTS_PER_PAGE } from '@consts';
 

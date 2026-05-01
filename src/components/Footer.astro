@@ -1,0 +1,76 @@
+---
+import { fetchMenu } from '@lib/navigation.js';
+const footerMenu = await fetchMenu('footer');
+
+type MenuItem = {
+    id: number;
+    parent: number;
+    title: string;
+    url: string;
+    target?: string;
+};
+const { menuData = [] } = Astro.props as { menuData?: MenuItem[] };
+const itemsById = new Map<number, MenuItem>();
+
+const linkRel = (target?: string) =>
+    target === "_blank" ? "noopener noreferrer" : undefined;
+
+---
+<section class="support">
+    <a href="/" class="logo">
+        <img src="/abcnorio-logo.svg" width="128" height="128" alt="ABC No Rio Logo" />
+    </a>
+    <p>You can buy some art or merch, or make a donation. Every bit help keep us afloat until we can continue programming in our new building.</p>
+</section>
+<footer>
+    <div class="container">
+
+        <nav aria-label="Footer navigation">
+            <ul class="footer__nav-list">
+                {footerMenu.map((item) => (
+                    <li key={item.id} class="footer__nav-item">
+                        <a
+                            href={item.url}
+                            target={item.target}
+                            rel={linkRel(item.target)}
+                        >
+                            {item.title}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    </div>
+</footer>
+<style>
+    .support {
+        background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3cline x1='0' y1='0' x2='100%25' y2='0' stroke='%23009a0a' stroke-width='3' stroke-dasharray='4%2c 10' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        padding: 2rem;
+        text-align: center;
+        img {
+            display: block;
+            margin: 0 auto;
+        }
+    }
+    footer {
+        background-color: var(--color-footer-bg);
+        color: var(--color-page-bg);
+        padding: 2rem;
+        .footer__nav-list {
+            list-style: none;
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+            padding: 0;
+            margin: 0;
+            justify-content: center;
+            li a {
+                color: var(--color-page-bg);
+                text-decoration: none;
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+</style>

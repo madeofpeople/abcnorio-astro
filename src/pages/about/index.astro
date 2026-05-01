@@ -1,7 +1,7 @@
 ---
 export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'about'].includes(process.env.SCOPE || 'full');
 
-import Layout from '@layouts/index.astro';
+import Layout from '@layouts/landing.astro';
 import Block from '@components/wp-blocks/generic-block.astro';
 import { SITE_URL, REST_PATH } from '@util/paths.js';
 import { fetchPostBlocksCachedByPostModified } from '@lib/blocks.js';

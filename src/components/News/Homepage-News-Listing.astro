@@ -13,6 +13,7 @@ let items = Array.isArray(results)
 
 items = items.slice(0, 7);
 ---
+{ results }
 <section class="listing">
     {items.map((result: any) => (
         <NewsTeaser data={result} />
