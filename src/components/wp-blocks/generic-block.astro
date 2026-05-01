@@ -10,6 +10,8 @@ import ListItem from './list-item.astro';
 import Gallery from './gallery.astro';
 import YouTube from './youtube.astro';
 import Heading from './heading.astro';
+import Group from './group.astro';
+import Buttons from './buttons.astro';
 
 let { component, attributes, innerBlocks } = Astro.props;
 
@@ -38,6 +40,9 @@ switch (component) {
     case 'core/gallery':
         Component = Gallery;
     break;
+    case 'core/group':
+        Component = Group;
+    break;
     case 'core/embed':
         switch(attributes.providerNameSlug) {
             case "youtube":
@@ -48,6 +53,15 @@ switch (component) {
             break;
         }
     break;
+    case 'core/buttons':
+        Component = Buttons;
+    break;
 } 
 ---
-<Component attributes={attributes} component={component} innerBlocks={innerBlocks||null} />
+{ Component === Debug && (
+     <Component component={component} />
+     <Component attributes={attributes} />
+) }
+{ Component !== Debug && (
+     <Component attributes={attributes} component={component} innerBlocks={innerBlocks||null} />
+) }

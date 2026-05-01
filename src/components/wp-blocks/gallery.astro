@@ -11,15 +11,13 @@ const { component, innerBlocks, attributes } = Astro.props;
         .images {
             display: flex;
             flex-wrap: nowrap;
-            picture {
+            gap: 1rem;
+            img {
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+                border: 0.75rem #eee solid;
                 display: block;
+                height: 500px;
                 width: auto;
-                height: 400px;
-                img {
-                    display: block;
-                    height: 100%;
-                    width: auto;
-                }
             }
         }
     }
