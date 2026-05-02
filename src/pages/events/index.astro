@@ -1,7 +1,7 @@
 ---
 export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'events'].includes(process.env.SCOPE || 'full');
 
-import Layout from "@layouts/landing.astro";
+import Layout from "@layouts/events.astro";
 import EventsPanel from "@components/Events/Events-Panel.astro";
 ---
 <Layout title="Events">

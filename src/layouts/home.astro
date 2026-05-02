@@ -38,11 +38,8 @@ const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
   <body class={`${slug}`}>
     {pushInProgress && <PushInProgressBanner />}
     <Header />
-    <main>
-      <h1>Code test</h1>
-      <article>
-        <slot /> <!-- your content is injected here -->
-      </article>
+    <main class="main">
+      <slot /> <!-- your content is injected here -->
     </main>
     <Footer />
   </body>

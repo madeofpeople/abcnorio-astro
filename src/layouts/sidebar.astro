@@ -1,7 +1,8 @@
 ---
 import Head from '@components/Head.astro';
-import Header from '../components/Header.astro';
-import { Debug } from 'astro:components';
+import Header from '@components/Header.astro';
+import Footer from '../components/Footer.astro';
+import './_event.scss';
 const {
   title,
   description,
@@ -11,7 +12,9 @@ const {
   twitterSite,
   twitterCard,
 } = Astro.props;
+
 const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
+
 ---
 <html lang="en">
   <Head
@@ -22,15 +25,17 @@ const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
     ogImage={ogImage}
     twitterSite={twitterSite}
     twitterCard={twitterCard}
-    loadHtmx={true}
   />
-  <body class={`collective ${slug}`}>
+  <body class={`event ${slug}`}>
     <Header />
-    <main class="main">
+    <main class="sidebar-layout">
+      <div class="wrapper">
         <slot name="header"/>
-        <slot name="main"/>
         <slot name="sidebar" />
+        <slot name="main"/>
+      </div>
     </main>
+    <Footer />
   </body>
   <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </html>

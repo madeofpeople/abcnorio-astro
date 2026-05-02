@@ -16,13 +16,15 @@ Astro.response.headers.set('HX-Push-Url', `${currentPathname}?${pushUrl.searchPa
 import { getEvents } from '../../lib/events/events.js';
 import EventListing from '@components/Events/Events-Listing.astro';
 import Pagination from '@components/Pagination/Pagination.astro';
-import { POSTS_PER_PAGE } from '@consts';
+import { POSTS_PER_PAGE, VENUE_TIMEZONE } from '@consts';
 
 const url = new URL(Astro.request.url);
 const dateFilter = url.searchParams.get('date-filter') ?? 'upcoming';
 const page = parseInt(url.searchParams.get('page') ?? '1', 10);
 
-const now = new Date().toISOString();
+// ACF stores event dates as naive Y-m-d H:i:s in VENUE_TIMEZONE.
+// Use the same format and timezone for "now" so DATETIME comparisons are correct.
+const now = new Date().toLocaleString('sv', { timeZone: VENUE_TIMEZONE });
 const filters: Record<string, string> = {};
 
 const explicitAfter = url.searchParams.get('event_start_after');
@@ -44,20 +46,12 @@ for (const param of ['event_start_after', 'event_start_before', 'event_type', 'e
 const order = url.searchParams.get('order') ?? 'desc';
 filters['orderby'] = 'event_start_date';
 filters['order'] = order;
-const { events, totalPages } = await getEvents(filters, { page, perPage: POSTS_PER_PAGE });
-const filterOverridden = effectiveDateFilter !== dateFilter;
+const { events, total, totalPages } = await getEvents(filters, { page, perPage: POSTS_PER_PAGE });
 const hrefParams = new URLSearchParams(url.searchParams);
 hrefParams.delete('page');
 const hrefBase = `${currentPathname}${hrefParams.toString() ? `?${hrefParams.toString()}` : ''}`;
 ---
-<EventListing events={events} />
-{filterOverridden && (
-    <select id="date-filter" name="date-filter" hx-swap-oob="true">
-        <option value="" selected={effectiveDateFilter === ''}>All</option>
-        <option value="upcoming" selected={effectiveDateFilter === 'upcoming'}>Upcoming</option>
-        <option value="past" selected={effectiveDateFilter === 'past'}>Past</option>
-    </select>
-)}
+<EventListing events={events} total={total} />
 <Pagination
     id="pagination"
     currentPage={page}

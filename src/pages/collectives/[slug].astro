@@ -1,29 +1,21 @@
 ---
-import Layout from '@layouts/collective.astro';
+export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'collectives'].includes(process.env.SCOPE || 'full');
+
+import Layout from '@layouts/sidebar.astro';
 import Block from '@components/wp-blocks/generic-block.astro';
 import CollectiveEventsPanel from '@components/Events/Collective-Events-Panel.astro';
 import { SITE_URL, REST_PATH } from '@util/paths.js';
-import { fetchPostBlocksCachedByPostModified } from '@lib/blocks.js';
 import { buildPostSeo } from '@util/seo.js';
-import { fetchAllWpItemsWithBuildCache, fetchJsonWithBuildCache } from '@util/build-cache.js';
+import { getCollection, getEntry } from 'astro:content';
+import { fetchWpPost } from '@util/fetch-data.js';
 
-// define vars are available in the template
 const { slug } = Astro.params;
-const mode = String(process.env.MODE || '').toLowerCase();
-const isLiveDevMode = mode === 'development' || mode === 'staging';
-let post = (Astro.props as any)?.post;
+const post: any = await fetchWpPost(
+  `${REST_PATH}collectives?slug=${encodeURIComponent(slug ?? '')}`,
+  (Astro.props as any)?.post,
+);
 
-if (isLiveDevMode && slug) {
-  const livePosts = await fetchJsonWithBuildCache(
-    `${REST_PATH}collectives?slug=${encodeURIComponent(slug)}`,
-    { defaultValue: [], cacheTtlMs: 0 },
-  );
-  if (Array.isArray(livePosts) && livePosts[0]) {
-    post = livePosts[0];
-  }
-}
-
-const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const blocks: any[] = post?.blocks ?? [];
 const seo = buildPostSeo({
   post,
   siteUrl: SITE_URL,
@@ -31,42 +23,44 @@ const seo = buildPostSeo({
 });
 const collectiveTermId = post?.['collective-associations']?.[0];
 
-// Build all collective pages
-// The getStaticPaths() is required for static Astro sites.
-// It does not have access to other scopes, use import.meta.env to avoid needless duplication.
-// As a result, it makes sense to do most of the mapping here rather than in the frontmatter.
 export async function getStaticPaths() {
   const scope = process.env.SCOPE || 'full';
   if (scope !== 'full' && scope !== 'collectives') {
     return [];
   }
 
-  const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}collectives`, { defaultValue: [] });
-  return posts.map((post:any) => ({
-    params: { slug: post.slug },
-    props: { post: post },
+  const entries = await getCollection('collectives');
+  return entries.map((entry: any) => ({
+    params: { slug: entry.id },
+    props: { post: entry.data },
   }));
 }
 
 ---
+
 <Layout
   title={seo.title}
   description={seo.description}
   canonical={seo.canonical}
   ogImage={seo.ogImage}>
-  <main>
 
+  <header slot="header">
     <h1 set:html={post.title.rendered}></h1>
+  </header>
 
-    {collectiveTermId && (
-      <h2>Upcoming Events</h2>
-      <CollectiveEventsPanel collectiveTermId={collectiveTermId} limit={3} server:defer />
-    )}
+  <article slot="main">
+    { blocks.map((block: any) => (
+      <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks || null} />
+    ))}
+  </article>
 
-    <article>
-      { blocks.map((block: any) => (
-          <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks || null} />
-        ))}
-    </article>
-</main>
+  <aside slot="sidebar">
+      {collectiveTermId && (
+        <h2>Upcoming Events</h2>
+        <CollectiveEventsPanel collectiveTermId={collectiveTermId} limit={3} />
+      )}
+  </aside>
 </Layout>
+
+
+

@@ -1,30 +1,21 @@
 ---
-import Layout from "../../layouts/event.astro";
+export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'events'].includes(process.env.SCOPE || 'full');
+
+import Layout from "../../layouts/sidebar.astro";
 import Block from "../../components/wp-blocks/generic-block.astro";
 import ATC from "../../components/AddToCalendar/AddToCalendar.astro";
 import { SITE_URL, REST_PATH } from "@util/paths.js";
-import { fetchPostBlocksCachedByPostModified } from "@lib/blocks.js";
 import { buildPostSeo } from "@util/seo.js";
-import { fetchAllWpItemsWithBuildCache, fetchJsonWithBuildCache } from "@util/build-cache.js";
+import { getCollection } from "astro:content";
+import { fetchWpPost } from "@util/fetch-data.js";
 
 const { slug } = Astro.params;
-const mode = String(process.env.MODE || "").toLowerCase();
-const isLiveDevMode = mode === "development" || mode === "staging";
-const propsPost = (Astro.props as any)?.post;
-let post = propsPost;
+const post: any = await fetchWpPost(
+  `${REST_PATH}events?slug=${encodeURIComponent(slug ?? '')}&_embed=wp:featuredmedia`,
+  (Astro.props as any)?.post,
+);
 
-if (isLiveDevMode && slug) {
-  const livePosts = await fetchJsonWithBuildCache(
-    `${REST_PATH}events?slug=${encodeURIComponent(slug)}&_embed=wp:featuredmedia`,
-    { defaultValue: [], cacheTtlMs: 0 },
-  );
-
-  if (Array.isArray(livePosts) && livePosts[0]) {
-    post = livePosts[0];
-  }
-}
-
-const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const blocks: any[] = post?.blocks ?? [];
 const seo = buildPostSeo({
   post,
   siteUrl: SITE_URL,
@@ -113,13 +104,10 @@ const featuredImageAlt = featuredImage?.alt_text ?? "";
 const eventTypeIds: number[] = Array.isArray(post?.["event-types"])
   ? post["event-types"]
   : [];
-const eventTypeTerms = await fetchAllWpItemsWithBuildCache(
-  `${REST_PATH}event-types?per_page=100`,
-  { defaultValue: [] },
-);
+const eventTypeTerms = await getCollection('event_types');
 const eventTypeNames = eventTypeTerms
-  .filter((term: any) => eventTypeIds.includes(term?.id))
-  .map((term: any) => term?.name)
+  .filter((entry: any) => eventTypeIds.includes(entry.data?.id))
+  .map((entry: any) => entry.data?.name)
   .filter(Boolean);
 
 let display_date;
@@ -142,22 +130,13 @@ export async function getStaticPaths() {
     return [];
   }
 
-  const events = await fetchAllWpItemsWithBuildCache(
-    `${REST_PATH}events?_embed=wp:featuredmedia`,
-    { defaultValue: [] },
-  );
-
-  return events
-    .map((post: any) => {
-      if (!post?.slug) {
-        return null;
-      }
-      return {
-        params: { slug: post.slug },
-        props: { post },
-      };
-    })
-    .filter(Boolean);
+  const entries = await getCollection('events');
+  return entries
+    .filter((entry: any) => entry.id)
+    .map((entry: any) => ({
+      params: { slug: entry.id },
+      props: { post: entry.data },
+    }));
 }
 ---
 
@@ -167,12 +146,12 @@ export async function getStaticPaths() {
   canonical={seo.canonical}
   ogImage={seo.ogImage}
 >
-  <section class="event-header" slot="event_header">
+  <header slot="header">
     {
       display_date && display_time && (
         <time>
-          <div>{display_date}</div>
-          <div>{display_time}</div>
+          <div set:html={`&nbsp;${display_date}&nbsp;`}></div>
+          <div set:html={`&nbsp;${display_time}&nbsp;`}></div>
         </time>
       )
     }
@@ -212,11 +191,9 @@ export async function getStaticPaths() {
         </div>
       )
     } -->
+  </header>
 
-
-  </section>
-
-  <article class="event-main" slot="main">
+  <article slot="main">
     {
       featuredImageUrl && (
         <img

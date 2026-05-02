@@ -1,28 +1,20 @@
 ---
+export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'about'].includes(process.env.SCOPE || 'full');
+
 import Layout from '@layouts/page.astro';
 import Block from '@components/wp-blocks/generic-block.astro';
 import { SITE_URL, REST_PATH } from '@util/paths.js';
-import { fetchPostBlocksCachedByPostModified } from '@lib/blocks.js';
 import { buildPostSeo } from '@util/seo.js';
-import { fetchAllWpItemsWithBuildCache, fetchJsonWithBuildCache } from '@util/build-cache.js';
+import { getCollection } from 'astro:content';
+import { fetchWpPost } from '@util/fetch-data.js';
 
-// define vars are available in the template
 const { slug } = Astro.params;
-const mode = String(process.env.MODE || '').toLowerCase();
-const isLiveDevMode = mode === 'development' || mode === 'staging';
-let post = (Astro.props as any)?.post;
+const post: any = await fetchWpPost(
+  `${REST_PATH}pages?slug=${encodeURIComponent(slug ?? '')}`,
+  (Astro.props as any)?.post,
+);
 
-if (isLiveDevMode && slug) {
-  const livePosts = await fetchJsonWithBuildCache(
-    `${REST_PATH}pages?slug=${encodeURIComponent(slug)}`,
-    { defaultValue: [], cacheTtlMs: 0 },
-  );
-  if (Array.isArray(livePosts) && livePosts[0]) {
-    post = livePosts[0];
-  }
-}
-
-const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const blocks: any[] = post?.blocks ?? [];
 const seo = buildPostSeo({
   post,
   siteUrl: SITE_URL,
@@ -35,23 +27,17 @@ export async function getStaticPaths() {
     return [];
   }
 
-  const parentPages = await fetchJsonWithBuildCache(`${REST_PATH}pages?slug=about`, { defaultValue: [] });
-  const aboutId = parentPages?.[0]?.id;
-
-  if (!aboutId) {
-    return [];
-  }
-
-  const posts = await fetchAllWpItemsWithBuildCache(`${REST_PATH}pages?parent=${aboutId}`, { defaultValue: [] });
-  return posts.map((post:any) => ({
-    params: { slug: post.slug },
-    props: { post: post },
+  const entries = await getCollection('about_pages');
+  return entries.map((entry: any) => ({
+    params: { slug: entry.id },
+    props: { post: entry.data },
   }));
 }
 
 
 ---
 
-<Layout>
+<Layout {...seo}>
   <h1 set:html={post.title.rendered}></h1>
+  {blocks.map((block: any) => <Block component={block.name} attributes={block.attributes} innerBlocks={block.innerBlocks} />)}
 </Layout>

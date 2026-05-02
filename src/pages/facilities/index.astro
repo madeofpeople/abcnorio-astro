@@ -4,17 +4,19 @@ export const prerender = ['development', 'staging'].includes(String(process.env.
 import Layout from '@layouts/landing.astro';
 import Block from '@components/wp-blocks/generic-block.astro';
 import { SITE_URL, REST_PATH } from '@util/paths.js';
-import { fetchPostBlocksCachedByPostModified } from '@lib/blocks.js';
 import { buildPostSeo } from '@util/seo.js';
-import { fetchJsonWithBuildCache } from '@util/build-cache.js';
+import { getEntry } from 'astro:content';
+import { fetchWpPost } from '@util/fetch-data.js';
 
-const pages = await fetchJsonWithBuildCache(`${REST_PATH}pages?slug=facilities`, { defaultValue: [] });
-const post = pages?.[0] ?? null;
-const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const post = await fetchWpPost(
+  `${REST_PATH}pages?slug=facilities`,
+  async () => { const e = await getEntry('pages', 'facilities'); return (e as any)?.data ?? null; },
+);
+const blocks: any[] = post?.blocks ?? [];
 const seo = buildPostSeo({
   post,
   siteUrl: SITE_URL,
-  pathname: '/about/',
+  pathname: '/facilities/',
 });
 ---
 

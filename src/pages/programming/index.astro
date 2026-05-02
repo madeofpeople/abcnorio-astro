@@ -1,15 +1,17 @@
 ---
-export const prerender = ['full', 'programming'].includes(process.env.SCOPE || 'full');
+export const prerender = ['development', 'staging'].includes(String(process.env.MODE || '').toLowerCase()) ? false : ['full', 'programming'].includes(process.env.SCOPE || 'full');
 import Layout from '@layouts/page.astro';
 import Block from '@components/wp-blocks/generic-block.astro';
 import { SITE_URL, REST_PATH } from '@util/paths.js';
-import { fetchPostBlocksCachedByPostModified } from '@lib/blocks.js';
 import { buildPostSeo } from '@util/seo.js';
-import { fetchJsonWithBuildCache } from '@util/build-cache.js';
+import { getEntry } from 'astro:content';
+import { fetchWpPost } from '@util/fetch-data.js';
 
-const pages = await fetchJsonWithBuildCache(`${REST_PATH}pages?slug=programming`, { defaultValue: [] });
-const post = pages?.[0] ?? null;
-const blocks = await fetchPostBlocksCachedByPostModified(post?.id, post?.modified_gmt || post?.modified);
+const post = await fetchWpPost(
+  `${REST_PATH}pages?slug=programming`,
+  async () => { const e = await getEntry('pages', 'programming'); return (e as any)?.data ?? null; },
+);
+const blocks: any[] = post?.blocks ?? [];
 const seo = buildPostSeo({
   post,
   siteUrl: SITE_URL,

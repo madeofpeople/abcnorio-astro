@@ -1,7 +1,8 @@
 ---
 import Head from '@components/Head.astro';
 import Header from '../components/Header.astro';
-import { Debug } from 'astro:components';
+const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
+
 const {
   title,
   description,
@@ -11,7 +12,6 @@ const {
   twitterSite,
   twitterCard,
 } = Astro.props;
-const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
 ---
 <html lang="en">
   <Head
@@ -24,12 +24,10 @@ const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
     twitterCard={twitterCard}
     loadHtmx={true}
   />
-  <body class={`collective ${slug}`}>
+  <body class={`landing ${slug}`}>
     <Header />
-    <main class="main">
-        <slot name="header"/>
-        <slot name="main"/>
-        <slot name="sidebar" />
+    <main>
+        <slot />
     </main>
   </body>
   <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>

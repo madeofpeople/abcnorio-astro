@@ -35,13 +35,12 @@ const slug = Astro.url.pathname.split('/').filter(Boolean).pop() || 'home';
     twitterCard={twitterCard}
     loadHtmx={shouldLoadHtmx}
   />
-  <body class="event {slug}">
+  <body class={`event ${slug}`}>
+    <a href="#main-content">Skip to main content</a>
     {pushInProgress && <PushInProgressBanner />}
     <Header />
-    <main>
-      <article>
-        <slot /> <!-- your content is injected here -->
-      </article>
+    <main id="main-content" class="main">
+      <slot /> <!-- your content is injected here -->
     </main>
     <Footer />
   </body>

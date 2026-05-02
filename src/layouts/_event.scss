@@ -1,59 +1,28 @@
+@use "@tokens/colors";
 @use "@tokens/breakpoints";
+@use "@mixins/layout";
 
-.event-layout {
-  display: grid;
-  padding: 2rem;
-  gap: 2rem;
+.sidebar-layout > .wrapper {
+  @include layout.sidebar();
 
-  .event-header {
-    order: 1;
+  > header {
 
     time {
-      padding: 0 0.5rem;
+      padding: 0 1rem;
       position: relative;
       color: #444;
       display: inline-block;
-      font-family: var( --font-impact-label), monospace;
+      font-family: var(--font-impact-label), monospace;
       font-size: 1.5rem;
-      transform: translate(-0.75rem, -0.5rem) rotate3d(0, 0, 1, -3deg);
+      transform: translate(-2rem, -0.5rem) rotate3d(0, 0, 1, -3deg);
     }
   }
 
-  .event-main {
-    max-width: 48rem;
-    order: 3;
-  }
-
-  aside {
-    order: 2;
+  > aside {
     button {
       display: block;
       width: 100%;
       margin-bottom: 0.5rem;
-    }
-  }
-
-  @media (min-width: breakpoints.get-breakpoint(sm)) {
-    display: grid;
-    grid-template-columns: repeat( 6, minmax(0, 1fr));
-    grid-template-rows: repeat( 3, minmax(0, 1fr));
-    padding: 0;
- 
-    .event-header {
-      order: 1;
-      grid-column: 1 / 6;
-    }
-
-    .event-main {
-      order: 2;
-      grid-column: 1 / 6;
-      background:#f00;
-    }
-
-    aside {
-      order: 3;
-      grid-column: 6 / 6;
-      grid-row: 1 / 3;
     }
   }
 }

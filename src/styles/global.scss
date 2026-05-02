@@ -54,18 +54,6 @@ button {
     }
 }
 
-main {
-    display: grid;
-    gap: 2rem;
-    margin-top: 2rem;
-    & > article {
-        padding: 1rem;
-        @media (min-width: breakpoints.get-breakpoint(sm)) {
-            padding: 2rem;
-        }
-    }
-}
-
 #announce {
     position: absolute;
     transform: translate3d(-50%, 0, 1);
@@ -99,4 +87,31 @@ event-filters {
     display: block;
     margin-bottom: 2rem;
     position: relative;
+}
+
+main {
+
+    hyphens: auto;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    
+    & > section,
+    & > article > section {
+        margin: 0 auto;
+        max-width: breakpoints.get-breakpoint(xl);
+        padding: 0 1rem;
+        @media screen and (min-width: breakpoints.get-breakpoint(md)) {
+            padding: 0 2rem;
+        }
+        @media screen and (min-width: breakpoints.get-breakpoint(xl)) {
+            padding: 0;
+        }
+    }
+
+    & > section.full,
+    & > .article > section.full {
+        max-width: none;
+        padding: 0;
+        background: #eee;
+    }
 }

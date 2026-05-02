@@ -22,13 +22,12 @@ const {
     ogImage={ogImage}
     twitterSite={twitterSite}
     twitterCard={twitterCard}
+    loadHtmx={false}
   />
   <body class={`landing ${slug}`}>
     <Header />
     <main>
-      <article>
-        <slot /> <!-- your content is injected here -->
-      </article>
+      <slot /> <!-- your content is injected here -->
     </main>
   </body>
   <script data-goatcounter="https://abcnorio.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
