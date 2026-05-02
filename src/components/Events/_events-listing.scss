@@ -1,4 +1,5 @@
 @use "@tokens/breakpoints";
+@use "@mixins/layout";
 
 $teaser-out-duration: 0.333s;
 $teaser-in-duration: 0.333s;
@@ -47,8 +48,18 @@ $stagger-step: 25ms;
   }
 }
 
-.events__listing .teaser {
-  transition-property: transform, opacity, filter;
+.events__count {
+  grid-column: 1 / -1;
+  font-size: 0.875rem;
+  color: #999;
+  margin: 0;
+}
+
+.events_listing {
+  @include layout.max-width();
+  .teaser {
+    transition-property: transform, opacity, filter;
+  }
 }
 
 // Apply per-card delay during both exit and enter phases so the listing

@@ -34,10 +34,10 @@ const [eventTypes, collectives] = await Promise.all([
         },
     ),
     getOrSetRuntimeCache(
-        "collectives:list",
+        "collective-associations:list",
         TAXONOMY_TTL_MS,
         async () => {
-            const res = await fetch(`${REST_PATH}collectives?per_page=100`);
+            const res = await fetch(`${REST_PATH}collective-associations?per_page=100`);
             return res.ok ? await res.json() : [];
         },
     ),
@@ -57,24 +57,24 @@ const [eventTypes, collectives] = await Promise.all([
     >
         <section class="filters">
 
-            <h2 class="ui-label">Event Filters</h2>
+            <!-- <h2 class="ui-label">Filter Events by…</h2> -->
             
             <div>
 
-                <div class="filter-group">
+                <fieldset class="filter-group date-filter">
                     <SegmentedControl
                         name="date-filter"
-                        label="Date filter"
+                        label="Show only"
                         options={[
                             { value: '', label: 'All', checked: dateFilter === '' },
                             { value: 'upcoming', label: 'Upcoming', checked: dateFilter === 'upcoming' },
                             { value: 'past', label: 'Past', checked: dateFilter === 'past' },
                         ]}
                     />
-                </div>
+                </fieldset>
 
-                <div class="filter-group">
-                    <label for="event_type">Type:</label>
+                <fieldset class="filter-group event-type">
+                    <label for="event_type">Event Type</label>
                     <select id="event_type" name="event_type">
                         <option value="">All</option>
                         {eventTypes.map((et: any) => (
@@ -84,52 +84,56 @@ const [eventTypes, collectives] = await Promise.all([
                             ))
                         }
                     </select>
-                </div>
+                </fieldset>
 
                 {collectives.length > 0 && (
-                    <div class="filter-group">
-                        <label for="collective_association">Collective:</label>
+                    <fieldset class="filter-group collective-association">
+                        <label for="collective_association">Collective</label>
                         <select id="collective_association" name="collective_association">
                             <option value="">All</option>
                             {collectives.map((c: any) => (
                                 <option value={c.id} selected={String(c.id) === collectiveAssociation}>
-                                    {c.title?.rendered ?? c.slug}
+                                    {c.name}
                                 </option>
                             ))}
                         </select>
-                    </div>
+                    </fieldset>
                 )}
 
-                <div class="filter-group">
-                    <label for="event_start_before">Date Before:</label>
-                    <input
-                        type="date"
-                        id="event_start_before"
-                        name="event_start_before"
-                        value={eventStartBefore}
-                    />
-                </div>
 
-                <div class="filter-group">
-                    <label for="event_start_after">Date After:</label>
-                    <input
-                        type="date"
-                        id="event_start_after"
-                        name="event_start_after"
-                        value={eventStartAfter}
-                    />
-                </div>
+                <fieldset class="filter-group date-range">
+                    <div>
+                        <legend class="ui-label">Date Range</legend>
+                        <div>
+                            <label for="event_start_after">After </label>
+                            <input
+                                type="date"
+                                id="event_start_after"
+                                name="event_start_after"
+                                value={eventStartAfter}
+                            />
+                            and
+                            <label for="event_start_before">Before </label>
+                            <input
+                                type="date"
+                                id="event_start_before"
+                                name="event_start_before"
+                                value={eventStartBefore}
+                            />
+                        </div>
+                    </div>
+                </fieldset>
 
-                <div class="filter-group">
+                <fieldset class="filter-group order">
                     <SegmentedControl
                         name="order"
                         label="Order"
                         options={[
-                            { value: 'asc', label: 'Oldest first', checked: order === 'asc' },
-                            { value: 'desc', label: 'Newest first', checked: order === 'desc' },
+                            { value: 'asc', label: 'Asc', checked: order === 'asc' },
+                            { value: 'desc', label: 'Desc', checked: order === 'desc' },
                         ]}
                     />
-                </div>
+                </fieldset>
                 <button id="apply-event-filters" type="submit">
                     Apply Filters
                 </button>
@@ -190,6 +194,20 @@ const [eventTypes, collectives] = await Promise.all([
 
             document.body.addEventListener("htmx:beforeRequest", handleBeforeRequest);
             document.body.addEventListener("htmx:afterSwap", handleAfterSwap);
+
+            // When a date input gets a value, reset the date-filter segmented
+            // control to "All" so it stays consistent with the actual query.
+            const allRadio = filtersEl.querySelector('input[name="date-filter"][value=""]') as HTMLInputElement | null;
+            const resetToAll = () => {
+                const after = (filtersEl.querySelector('#event_start_after') as HTMLInputElement)?.value;
+                const before = (filtersEl.querySelector('#event_start_before') as HTMLInputElement)?.value;
+                if (allRadio && (after || before) && !allRadio.checked) {
+                    allRadio.checked = true;
+                    allRadio.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            };
+            filtersEl.querySelector('#event_start_after')?.addEventListener('change', resetToAll);
+            filtersEl.querySelector('#event_start_before')?.addEventListener('change', resetToAll);
         }
     }
 </script>

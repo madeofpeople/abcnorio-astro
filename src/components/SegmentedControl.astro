@@ -16,7 +16,8 @@ const { name, options, label } = Astro.props;
 
 <segmented-control>
     <fieldset>
-        <legend class="sr-only">{label}</legend>
+        {label && <legend>{label}</legend>}
+        <div class="segmented-control__options">
         {options.map((opt) => {
             const id = `${name}-${opt.value || 'all'}`;
             return (
@@ -27,6 +28,7 @@ const { name, options, label } = Astro.props;
             );
         })}
         <span class="segmented-control__pill" aria-hidden="true"></span>
+        </div>
     </fieldset>
 </segmented-control>
 
@@ -34,17 +36,24 @@ const { name, options, label } = Astro.props;
     @use '@mixins/visibility';
     segmented-control {
         display: inline-flex;
-        margin-top: 1.25rem;
 
+        legend {
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
         fieldset {
             border: none;
             margin: 0;
             padding: 0;
-            position: relative;
-            display: inline-flex;
-            background-color: #eee;
-            box-shadow: 0 0 3px inset rgba(0, 0, 0, 0.3);
-            border-radius: 2em;
+
+            .segmented-control__options {
+                position: relative;
+                display: inline-flex;
+                background-color: #eee;
+                box-shadow: 0 0 3px inset rgba(0, 0, 0, 0.3);
+                border-radius: 2em;
+            }
 
             input[type='radio'] {
                 position: absolute;

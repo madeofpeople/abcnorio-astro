@@ -14,7 +14,7 @@ export async function getEvents(filters = {}, { page = 1, perPage = POSTS_PER_PA
     );
     const params = new URLSearchParams(
         Object.fromEntries(
-            Object.entries({ ...mapped, page, per_page: perPage, _embed: 'wp:featuredmedia' })
+            Object.entries({ ...mapped, page, per_page: perPage })
                 .filter(([, v]) => v !== '' && v != null)
         )
     );

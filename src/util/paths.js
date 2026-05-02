@@ -6,6 +6,7 @@ let restAPI, blocksAPI, searchAPI, cmsURL = '';
 switch (mode) {
   case 'production':
   case 'staging':
+  case 'preview':
     cmsURL = env.STAGING_CMS
     searchAPI = env.STAGING_SEARCH_API
     break;

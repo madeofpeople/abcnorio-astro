@@ -1,47 +1,36 @@
 ---
-import { getEvents } from "@lib/events/events.js";
-import EventListing from "@components/Events/Events-Listing.astro";
+import { getCollection } from 'astro:content';
+import EventTeaser from "@components/Events/Events-Teaser.astro";
 
 interface Props {
     collectiveTermId: number;
     limit?: number;
+    order?: 'asc' | 'desc';
 }
 
-const { collectiveTermId, limit = 3 } = Astro.props;
+const { collectiveTermId, limit = 3, order = 'asc' } = Astro.props;
 
-const now = new Date().toISOString();
+const now = new Date();
+const allEntries = await getCollection('events');
 
-const filters: Record<string, string | number> = {
-    orderby: "event_start_date",
-    order: "asc",
-    collective_association: collectiveTermId,
-    event_start_after: now,
-};
-
-async function getAllUpcomingEvents(): Promise<any[]> {
-    const perPage = 100;
-    let page = 1;
-    let totalPages = 1;
-    const allEvents: any[] = [];
-
-    while (page <= totalPages) {
-        const { events: pageEvents, totalPages: pageCount } = await getEvents(filters, { page, perPage });
-        totalPages = pageCount;
-        allEvents.push(...pageEvents);
-        page += 1;
-    }
-
-    return allEvents;
-}
-
-const allEvents = await getAllUpcomingEvents();
-const events = allEvents.slice(0, limit);
-const hasUpcomingEvents = events.length > 0;
+const upcoming = allEntries
+    .filter((entry: any) => {
+        const assoc: number[] = entry.data?.['collective-associations'] ?? [];
+        if (!assoc.includes(collectiveTermId)) return false;
+        const startRaw = entry.data?.meta?.event_start_date ?? entry.data?.acf?.event_start_date ?? '';
+        return startRaw && new Date(startRaw) >= now;
+    })
+    .sort((a: any, b: any) => {
+        const aMs = new Date(a.data?.meta?.event_start_date ?? '').getTime();
+        const bMs = new Date(b.data?.meta?.event_start_date ?? '').getTime();
+        return order === 'asc' ? aMs - bMs : bMs - aMs;
+    })
+    .slice(0, limit);
 ---
-{hasUpcomingEvents && (
+{upcoming.length > 0 && (
     <events-panel>
-        <div class="events_listing">
-            <EventListing events={events} />
-        </div>
+        {upcoming.map((entry: any) => (
+            <EventTeaser data={entry.data} />
+        ))}
     </events-panel>
 )}

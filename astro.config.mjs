@@ -47,6 +47,9 @@ switch (mode) {
     buildPath = env.PRODUCTION_BUILD_PATH;
     siteUrl = env.PRODUCTION_FRONTEND_URL || siteUrl;
     break;
+  case 'preview':
+    siteUrl = env.PREVIEW_FRONTEND_URL || siteUrl;
+    break;
   case 'staging':
     buildPath = env.STAGING_BUILD_PATH;
     siteUrl = env.STAGING_FRONTEND_URL || siteUrl;

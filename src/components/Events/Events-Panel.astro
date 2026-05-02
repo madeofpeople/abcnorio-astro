@@ -3,14 +3,16 @@ import { getEvents } from '@lib/events/events.js'
 import EventListing from "@components/Events/Events-Listing.astro";
 import EventFilters from "@components/Events/Events-Filters.astro";
 import Pagination from '@components/Pagination/Pagination.astro';
-import { POSTS_PER_PAGE } from '@consts';
+import { POSTS_PER_PAGE, VENUE_TIMEZONE } from '@consts';
 
 const page = parseInt(Astro.url.searchParams.get('page') ?? '1', 10);
 const hrefParams = new URLSearchParams(Astro.url.searchParams);
 hrefParams.delete('page');
 const hrefBase = `/events${hrefParams.toString() ? `?${hrefParams.toString()}` : ''}`;
 
-const now = new Date().toISOString();
+// ACF stores event dates as naive Y-m-d H:i:s in VENUE_TIMEZONE.
+// Use the same format and timezone for "now" so DATETIME comparisons are correct.
+const now = new Date().toLocaleString('sv', { timeZone: VENUE_TIMEZONE });
 const dateFilter = Astro.url.searchParams.get('date-filter') ?? 'upcoming';
 const filters: Record<string, string> = {};
 
@@ -33,7 +35,7 @@ for (const param of ['event_start_after', 'event_start_before', 'event_type', 'e
 filters['orderby'] = 'event_start_date';
 filters['order'] = Astro.url.searchParams.get('order') ?? 'desc';
 
-const { events, totalPages } = await getEvents(filters, { page, perPage: POSTS_PER_PAGE });
+const { events, total, totalPages } = await getEvents(filters, { page, perPage: POSTS_PER_PAGE });
 ---
 <events-panel>
     <EventFilters
@@ -45,7 +47,7 @@ const { events, totalPages } = await getEvents(filters, { page, perPage: POSTS_P
         eventStartAfter={Astro.url.searchParams.get('event_start_after') ?? ''}
     />
     <div class="events_listing">
-        <EventListing events={events} />
+        <EventListing events={events} total={total} />
     </div>
     <Pagination
         id="pagination"

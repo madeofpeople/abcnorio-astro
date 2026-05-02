@@ -1,44 +1,19 @@
 import { BLOCKS_PATH } from '@util/paths.js';
-import { fetchJsonWithBuildCache } from '@util/build-cache.js';
+import { fetchWpJson } from '@util/wp-fetch.js';
 
 /**
- * @typedef {Object} PostBlocksPayload
- * @property {any[]} [blocks]
- */
-
-/**
- * Fetch blocks for a post and cache by post modified timestamp when available.
- * This keeps the existing plugin endpoint while avoiding unnecessary re-fetches.
- *
- * @param {number|string} postId
- * @param {string} [postModified]
- * @returns {Promise<any[]>}
- */
-export async function fetchPostBlocksCachedByPostModified(postId, postModified) {
-  if (!postId) {
-    return [];
-  }
-
-  const requestUrl = `${BLOCKS_PATH}posts/${postId}/blocks`;
-  const cacheKey = postModified
-    ? `${requestUrl}::post_modified=${postModified}`
-    : requestUrl;
-
-  /** @type {PostBlocksPayload} */
-  const payload = await fetchJsonWithBuildCache(requestUrl, {
-    defaultValue: { blocks: [] },
-    cacheKey,
-  });
-
-  return payload?.blocks || [];
-}
-
-/**
- * Backward-compatible wrapper for callers that only have post ID.
+ * Fetch blocks for a post by ID.
+ * Called only from content loaders (build time) and dev-mode live fetches.
  *
  * @param {number|string} postId
  * @returns {Promise<any[]>}
  */
 export async function fetchPostBlocks(postId) {
-  return fetchPostBlocksCachedByPostModified(postId);
+  if (!postId) return [];
+  try {
+    const payload = await fetchWpJson(`${BLOCKS_PATH}posts/${postId}/blocks`);
+    return payload?.blocks || [];
+  } catch {
+    return [];
+  }
 }

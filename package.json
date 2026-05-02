@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "docker-dev": "astro dev --host 0.0.0.0 --port 3033",
+    "docker-staging": "astro dev --host 0.0.0.0 --port 3033",
     "staging_dev": "MODE=staging npx astro dev",
     "build": "npm run maybe:backup:build && npm run build:site && npm run build:wp-admin-styles",
     "maybe:backup:build": "if [ \"$ASTRO_BUILD_BACKUP\" = \"1\" ]; then npm run backup:build; else echo 'Skipping build backup (set ASTRO_BUILD_BACKUP=1 to enable).'; fi",

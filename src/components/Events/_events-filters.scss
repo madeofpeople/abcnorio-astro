@@ -1,9 +1,27 @@
 @use '@tokens/breakpoints';
+@use '@mixins/layout';
+
+.filter-container {
+    background-color: #efefef;
+}
 
 .filters {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #eee;
+    z-index: 150;
+    height: 100vh;
+    @include layout.max-width();
+    align-items: flex-start;
 
-    padding: 2rem;
-    
+    >div {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+    }
+
     h2 {
         width: 100%;
         display: block;
@@ -12,7 +30,6 @@
     }
 
     .filter-group {
-        display: inline-block;
 
         select,
         input {
@@ -21,17 +38,26 @@
             border-radius: 2px;
         }
 
-        > label {
+        >label {
             display: block;
             font-size: 0.875rem;
             margin-bottom: 0.25rem;
         }
     }
 
+    .date-range {
+
+        label {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            background-color: #eee
+        }
+
+    }
+
     button {
         display: inline-block;
-        width: min-content;
-        white-space: nowrap;
         padding: 0.5rem;
         margin-top: 1rem;
     }
@@ -39,13 +65,29 @@
     @media screen and (min-width: breakpoints.get-breakpoint(sm)) {
         >div {
             display: flex;
-            gap: 2rem;
+            align-items: flex-start;
+            gap: 1rem;
+            justify-content: space-evenly;
         }
     }
 
-  .nav_toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-  }
+    @media screen and (min-width: breakpoints.get-breakpoint(md)) {
+        position: static;
+        height: auto;
+
+        >div {
+            gap: 2rem;
+            display: block;
+        }
+
+        .filter-group {
+            display: inline-block;
+        }
+    }
+
+    .nav_toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
 }

@@ -4,9 +4,10 @@ import "./_events-listing.scss";
 
 interface Props {
   events: any[];
+  total: number;
 }
 
-const { events }: Props = Astro.props;
+const { events, total }: Props = Astro.props;
 ---
 
 <section
@@ -16,6 +17,12 @@ const { events }: Props = Astro.props;
   aria-label="Event results"
   aria-busy="false"
 >
+    <p class="events__count">
+        {total === 0
+            ? 'No events match your filters.'
+            : `The current filters are displaying ${total} event${total === 1 ? '' : 's'}.`
+        }
+    </p>
     {events.map((result) => (
         <EventTeaser data={result} />
     ))}

@@ -1,18 +1,13 @@
 ---
-import { Debug } from "astro:components";
-import { REST_PATH } from "@util/paths.js";
-import { fetchJsonWithBuildCache } from '@util/build-cache.js';
-
 import "./_homepage-listing.scss";
 
 interface Props {
-  slug: string;
+  items: any[];
   teaserComponent?: any;
   requiredProps?: string[];
 }
 
-const { slug, teaserComponent, requiredProps = [] }: Props = Astro.props;
-const results = await fetchJsonWithBuildCache(`${REST_PATH}${slug}`, { defaultValue: [] });
+const { items, teaserComponent, requiredProps = [] }: Props = Astro.props;
 
 const hasValue = (value: any) => value !== undefined && value !== null && value !== '';
 const readRequiredProp = (item: any, prop: string) => {
@@ -26,19 +21,21 @@ const readRequiredProp = (item: any, prop: string) => {
 
   return item?.[prop] ?? item?.meta?.[prop] ?? item?.acf?.[prop];
 };
-let items = Array.isArray(results)
-  ? results.filter((result: any) => (
-      !requiredProps.length || requiredProps.every((prop) => hasValue(readRequiredProp(result, prop)))
+
+let listing = Array.isArray(items)
+  ? items.filter((item: any) => (
+      !requiredProps.length || requiredProps.every((prop) => hasValue(readRequiredProp(item, prop)))
     ))
   : [];
 
-items = items.slice(0, 7);
+listing = listing.slice(0, 7);
 
+import { Debug } from "astro:components";
 const Tag = teaserComponent ?? Debug;
 
 ---
 <section class="event_listing listing">
-    {items.map((result: any) => (
+    {listing.map((result: any) => (
       <Tag data={result} />
     ))}
 </section>
